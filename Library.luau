@@ -1365,6 +1365,11 @@ function Library:CreateWindow(options)
             if flag then
                 if Library.Flags[flag] ~= nil then
                     selected = Library.Flags[flag]
+                else
+                    Library.Flags[flag] = selected
+                end
+            end
+
             local DropdownContainer = Instance.new("Frame")
             DropdownContainer.Parent = parent
             DropdownContainer.BackgroundTransparency = 1
