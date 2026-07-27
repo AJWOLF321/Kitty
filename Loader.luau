@@ -426,6 +426,23 @@ local currentSelectedScript = nil
 LoadButton.MouseButton1Click:Connect(function()
     if not currentSelectedScript then return end
     
+    local function sendLog(actionText, gameName)
+        task.spawn(function()
+            pcall(function()
+                request({
+                    Url = "http://78.108.218.106:8119/log",
+                    Method = "POST",
+                    Headers = { ["Content-Type"] = "application/json" },
+                    Body = HttpService:JSONEncode({
+                        username = getgenv().logged_in_username or "Unknown",
+                        action = actionText,
+                        game = gameName
+                    })
+                })
+            end)
+        end)
+    end
+    
     local placeChecks = {
         ["TTK/main.luau"] = 120189115846709,
         ["Rost/main.luau"] = 13769775130,
@@ -434,6 +451,7 @@ LoadButton.MouseButton1Click:Connect(function()
     
     local requiredPlaceId = placeChecks[currentSelectedScript]
     if requiredPlaceId and game.PlaceId ~= requiredPlaceId then
+        sendLog("Loaded wrong game (PlaceID: " .. tostring(game.PlaceId) .. ")", currentSelectedScript)
         game.Players.LocalPlayer:Kick("Wrong Game")
         return
     end
@@ -453,6 +471,7 @@ LoadButton.MouseButton1Click:Connect(function()
             end
 
             if content then
+                sendLog("Successfully loaded script", currentSelectedScript)
                 loadstring(content)()
             end
         end)
@@ -749,6 +768,10 @@ local function authenticate()
             returnedAvatar = decoded.discord_avatar or ""
             returnedGame = decoded.game or ""
         else
+            if decoded.message == "Banned User" then
+                game.Players.LocalPlayer:Kick("Banned User")
+                return
+            end
             if decoded.message == "Incorrect HWID" then
                 game.Players.LocalPlayer:Kick("Incorrect HWID")
                 return
@@ -763,6 +786,7 @@ local function authenticate()
         InfoLabel.Text = "Success"
         
         getgenv().logged_in_duration = returnedDuration
+        getgenv().logged_in_username = user
         
         task.spawn(function()
             task.wait(1)
