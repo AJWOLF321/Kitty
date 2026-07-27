@@ -109,6 +109,8 @@ function Library:SetTheme(themeType, color, alpha)
                     ColorSequenceKeypoint.new(1, color)
                 })
             end)
+        elseif obj.Type == 'Custom' then
+            pcall(function() obj.Inst(color) end)
         end
     end
 end
@@ -135,6 +137,8 @@ function Library:RegisterTheme(inst, themeType, propType)
                 ColorSequenceKeypoint.new(1, color)
             })
         end)
+    elseif propType == 'Custom' then
+        pcall(function() inst(color) end)
     end
 end
 
@@ -1125,9 +1129,14 @@ function Library:CreateWindow(options)
                 })
             end)
 
-            Library:RegisterTheme(CheckBoxInner, "Accent", "BackgroundColor3")
+            Library:RegisterTheme(function(color)
+                if state then
+                    CheckBox.BackgroundColor3 = color
+                end
+            end, "Accent", "Custom")
+
             if state then callback(state) end
-            TrackElement(ToggleOuter)
+            TrackElement(ToggleContainer)
 
             local toggleObj = {
                 Set = function(self, val)
