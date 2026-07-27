@@ -36,10 +36,9 @@ local state = {
     InfiniteAmmo = false,
     RapidFire = false,
     NoStamina = false,
-    NoRecoilSpread = false,
-    Fullbright = false,
-    BulletTracers = false,
     KillEffects = false,
+    KillEffectType = "Confetti",
+    RemoveAnimations = {},
     TriggerBot = false,
     SkeletonESP = false,
     HealthBar = false,
@@ -222,6 +221,19 @@ VisualsTab:CreateColorPicker({
 VisualsTab:CreateSection("Tracers & Effects", "right")
 createKittyToggle(VisualsTab, "BulletTracers", "Bullet Tracers", "right")
 createKittyToggle(VisualsTab, "KillEffects", "Kill Effects", "right")
+VisualsTab:CreateDropdown({
+    Name = "Kill Effect Style",
+    Items = {"Confetti", "Explosion"},
+    Default = "Confetti",
+    Multi = false,
+    Flag = "KillEffectType",
+    Side = "right",
+    Callback = function(Selected)
+        state.KillEffectType = type(Selected) == "table" and Selected[1] or Selected
+    end
+})
+
+
 
 VisualsTab:CreateDropdown({
     Name = "Tracer Type",
@@ -251,20 +263,18 @@ VisualsTab:CreateColorPicker({
 MiscTab:CreateSection("Misc Settings", "left")
 createKittyToggle(MiscTab, "InfiniteAmmo", "Infinite Ammo", "left")
 createKittyToggle(MiscTab, "NoStamina", "No Stamina", "left")
-createKittyToggle(MiscTab, "Flight", "Flight (Noclip)", "left")
-
-MiscTab:CreateSlider({
-    Name = "Flight Speed",
-    Min = 10,
-    Max = 150,
-    Default = 50,
-    Flag = "FlightSpeed",
+createKittyToggle(MiscTab, "Noclip", "Noclip", "left")
+MiscTab:CreateDropdown({
+    Name = "Remove Animations",
+    Items = {"Recoil", "Sway", "Bob"},
+    Default = {},
+    Multi = true,
+    Flag = "RemoveAnimations",
     Side = "left",
-    Callback = function(Value)
-        state.FlightSpeed = Value
+    Callback = function(SelectedTable)
+        state.RemoveAnimations = SelectedTable
     end
 })
-
 -- ==========================
 -- LOCAL TAB
 -- ==========================
@@ -742,37 +752,75 @@ table.insert(connections, Players.PlayerRemoving:Connect(removeESP))
 -- Update loop to handle death and respawns smoothly
 local previousHealths = {}
 
-local function playKillEffect(character)
-    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+local function playKillEffect(targetModel, effectType)
+    if not targetModel then return end
+    local root = targetModel:FindFirstChild("HumanoidRootPart") or targetModel:FindFirstChild("LowerTorso") or targetModel:FindFirstChild("Torso") or targetModel:FindFirstChild("Head")
+    if not root then return end
     
-    local attachment = Instance.new("Attachment")
-    attachment.Parent = character.HumanoidRootPart
-    
-    local colors = {
-        Color3.new(1, 0, 0),   -- Red
-        Color3.new(0, 1, 0),   -- Green
-        Color3.new(0, 0, 1),   -- Blue
-        Color3.new(1, 1, 0),   -- Yellow
-        Color3.new(1, 0, 1),   -- Magenta
-        Color3.new(0, 1, 1)    -- Cyan
-    }
-    
-    for _, color in ipairs(colors) do
-        local particles = Instance.new("ParticleEmitter")
-        particles.Color = ColorSequence.new(color)
-        particles.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.4), NumberSequenceKeypoint.new(1, 0)})
-        particles.Lifetime = NumberRange.new(8, 10)
-        particles.Speed = NumberRange.new(15, 35)
-        particles.SpreadAngle = Vector2.new(180, 180)
-        particles.Rate = 0
-        particles.Parent = attachment
+    if effectType == "Confetti" then
+        local attachment = Instance.new("Attachment")
+        attachment.Parent = root
+        local colors = { Color3.new(1,0,0), Color3.new(0,1,0), Color3.new(0,0,1), Color3.new(1,1,0), Color3.new(1,0,1), Color3.new(0,1,1) }
+        for _, color in ipairs(colors) do
+            local p = Instance.new("ParticleEmitter")
+            p.Color = ColorSequence.new(color)
+            p.Size = NumberSequence.new({NumberSequenceKeypoint.new(0,0.4), NumberSequenceKeypoint.new(1,0)})
+            p.Lifetime = NumberRange.new(8,10)
+            p.Speed = NumberRange.new(15,35)
+            p.SpreadAngle = Vector2.new(180,180)
+            p.Rate = 0
+            p.Parent = attachment
+            p:Emit(25)
+        end
+        task.delay(10, function() if attachment then attachment:Destroy() end end)
         
-        particles:Emit(25)
+    elseif effectType == "Explosion" then
+        local explosion = Instance.new("Explosion")
+        explosion.Position = root.Position
+        explosion.BlastRadius = 0
+        explosion.BlastPressure = 0
+        explosion.DestroyJointRadiusPercent = 0
+        explosion.Parent = workspace
+        
+    elseif effectType == "Blood Splash" then
+        local attachment = Instance.new("Attachment")
+        attachment.Parent = root
+        local p = Instance.new("ParticleEmitter")
+        p.Color = ColorSequence.new(Color3.fromRGB(138, 3, 3))
+        p.Size = NumberSequence.new({NumberSequenceKeypoint.new(0, 0.8), NumberSequenceKeypoint.new(1, 0)})
+        p.Lifetime = NumberRange.new(1, 2)
+        p.Speed = NumberRange.new(10, 25)
+        p.SpreadAngle = Vector2.new(45, 45)
+        p.EmissionDirection = Enum.NormalId.Top
+        p.Acceleration = Vector3.new(0, -30, 0)
+        p.Rate = 0
+        p.Parent = attachment
+        p:Emit(100)
+        task.delay(3, function() if attachment then attachment:Destroy() end end)
+        
+    elseif effectType == "Lightning" then
+        for i=1, 3 do
+            task.delay(i * 0.1, function()
+                if not root then return end
+                local p0 = root.Position + Vector3.new(math.random(-5,5), 50, math.random(-5,5))
+                local p1 = root.Position
+                local beam = Instance.new("Part")
+                beam.Anchored = true
+                beam.CanCollide = false
+                beam.Material = Enum.Material.Neon
+                beam.Color = Color3.fromRGB(0, 255, 255)
+                beam.Size = Vector3.new(0.5, 0.5, (p0 - p1).Magnitude)
+                beam.CFrame = CFrame.lookAt(p0, p1) * CFrame.new(0, 0, -(p0 - p1).Magnitude / 2)
+                beam.Parent = workspace
+                task.delay(0.2, function()
+                    local ts = game:GetService("TweenService")
+                    local tw = ts:Create(beam, TweenInfo.new(0.3), {Transparency = 1, Size = Vector3.new(0,0,beam.Size.Z)})
+                    tw:Play()
+                    tw.Completed:Connect(function() beam:Destroy() end)
+                end)
+            end)
+        end
     end
-    
-    task.delay(10, function()
-        if attachment then attachment:Destroy() end
-    end)
 end
 
 table.insert(connections, RunService.RenderStepped:Connect(function()
@@ -782,28 +830,32 @@ table.insert(connections, RunService.RenderStepped:Connect(function()
             local health = character.Humanoid.Health
             local prevHealth = previousHealths[player] or 100
             
+            local mercFolder = workspace:FindFirstChild("MercPlayers")
+            local targetModel = character
+            local visualModel = character
+            local adorneePart = character.HumanoidRootPart
+            
+            if mercFolder then
+                local hitboxModel = mercFolder:FindFirstChild("MercHitboxes_" .. player.Name)
+                if hitboxModel then
+                    targetModel = hitboxModel
+                    adorneePart = hitboxModel:FindFirstChild("HumanoidRootPart") or hitboxModel:FindFirstChild("LowerTorso") or hitboxModel:FindFirstChild("Torso")
+                end
+                local vModel = mercFolder:FindFirstChild("MercVisual_" .. player.Name)
+                if vModel then
+                    visualModel = vModel
+                end
+            end
+
             if health <= 0 and prevHealth > 0 then
-                if state.KillEffects then
-                    playKillEffect(character)
+                if state.KillEffects and state.KillEffectType then
+                    playKillEffect(visualModel, state.KillEffectType)
                 end
             end
             previousHealths[player] = health
             
             if state.ESP and health > 0 then
                 billboard.Enabled = true
-                
-                local mercFolder = workspace:FindFirstChild("MercPlayers")
-                local targetModel = character
-                local adorneePart = character.HumanoidRootPart
-                
-                if mercFolder then
-                    local hitboxModel = mercFolder:FindFirstChild("MercHitboxes_" .. player.Name)
-                    if hitboxModel then
-                        targetModel = hitboxModel
-                        adorneePart = hitboxModel:FindFirstChild("HumanoidRootPart") or hitboxModel:FindFirstChild("LowerTorso") or hitboxModel:FindFirstChild("Torso")
-                    end
-                end
-                
                 billboard.Adornee = adorneePart
                 
                 if billboard:FindFirstChild("NameLabel") then
@@ -844,9 +896,6 @@ end))
 -- ==========================
 local GunController = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Client"):WaitForChild("Controllers"):WaitForChild("GunController"))
 
-local noclip = false
-local ncSpeed = 50
-state.FlightSpeed = ncSpeed
 local normalSpeed = 50
 
 table.insert(connections, RunService.RenderStepped:Connect(function(dt)
@@ -868,6 +917,63 @@ table.insert(connections, RunService.RenderStepped:Connect(function(dt)
             GunController.Weapon.FireRate = 0.01
             GunController.Weapon.FireMode = "auto"
             GunController.Weapon.FireModes = {"auto"}
+        end
+        
+        -- Remove Animations Logic (Multi-Select)
+        if type(state.RemoveAnimations) == "table" and GunController.Weapon then
+            local removeRecoil = table.find(state.RemoveAnimations, "Recoil")
+            local removeSway = table.find(state.RemoveAnimations, "Sway")
+            local removeBob = table.find(state.RemoveAnimations, "Bob")
+            
+            -- Zero out recoil variables completely
+            if removeRecoil then
+                local function zeroSpring(spring)
+                    if spring then
+                        spring.t = Vector3.zero
+                        spring.p = Vector3.zero
+                        spring.v = Vector3.zero
+                    end
+                end
+                zeroSpring(GunController.Weapon.RecoilSpring)
+                zeroSpring(GunController.Weapon.RecoilShakeSpring)
+                zeroSpring(GunController.Weapon.RecoilTiltSpring)
+                zeroSpring(GunController.Weapon.RecoilTiltShakeSpring)
+                zeroSpring(GunController.Weapon.RecoilPushSpring)
+                zeroSpring(GunController.Weapon.RecoilTrailSpring)
+                GunController.Weapon.RecoilAmount = 0
+                
+                -- Hook the camera recoil effect
+                if GunController.Weapon.CameraFX and not GunController.Weapon.CameraFX._recoilHooked then
+                    GunController.Weapon.CameraFX._originalRecoil = GunController.Weapon.CameraFX.Recoil
+                    GunController.Weapon.CameraFX.Recoil = function(...)
+                        if state.RemoveAnimations and table.find(state.RemoveAnimations, "Recoil") then return end
+                        return GunController.Weapon.CameraFX._originalRecoil(...)
+                    end
+                    GunController.Weapon.CameraFX._recoilHooked = true
+                end
+            end
+            
+            -- Zero out sway variables
+            if removeSway then
+                GunController.Weapon.SwayPhase = 0
+                GunController.Weapon.WalkSwayX = 0
+                GunController.Weapon.WalkSwayY = 0
+                if GunController.Weapon.CameraFX then
+                    GunController.Weapon.CameraFX.WeaponSwayPhase = 0
+                end
+            end
+            
+            -- Zero out bob (Idle and Walk)
+            if removeBob then
+                if GunController.Weapon.IdleSwayOffset then
+                    -- Reset via method if it exists, otherwise just clear the spring/phase
+                    GunController.Weapon.IdleSwayPhase = 0
+                end
+                if GunController.Weapon.Viewmodel then
+                    GunController.Weapon.Viewmodel.AdsWalkBobMult = 0
+                    GunController.Weapon.Viewmodel.WalkBobMult = 0
+                end
+            end
         end
         
         if state.TriggerBot then
@@ -927,33 +1033,13 @@ table.insert(connections, RunService.RenderStepped:Connect(function(dt)
             end
             
             local hrp = character:FindFirstChild("HumanoidRootPart")
-            if state.Flight then
-                if hrp then
-                    for _, part in pairs(character:GetDescendants()) do
-                        if part:IsA("BasePart") and part.CanCollide then
-                            part.CanCollide = false
-                        end
+            if hrp and hrp.Anchored then hrp.Anchored = false end
+            
+            if state.Noclip then
+                for _, part in pairs(character:GetDescendants()) do
+                    if part:IsA("BasePart") and part.CanCollide then
+                        part.CanCollide = false
                     end
-                    
-                    hrp.Anchored = true
-                    
-                    local cam = workspace.CurrentCamera
-                    local moveDir = Vector3.zero
-                    if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + cam.CFrame.LookVector end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - cam.CFrame.LookVector end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - cam.CFrame.RightVector end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + cam.CFrame.RightVector end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveDir = moveDir + Vector3.new(0, 1, 0) end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then moveDir = moveDir - Vector3.new(0, 1, 0) end
-                    
-                    if moveDir.Magnitude > 0 then
-                        moveDir = moveDir.Unit
-                        hrp.CFrame = hrp.CFrame + (moveDir * (state.FlightSpeed * dt))
-                    end
-                end
-            else
-                if hrp and hrp.Anchored then
-                    hrp.Anchored = false
                 end
             end
     end
@@ -1420,12 +1506,12 @@ table.insert(connections, UserInputService.InputBegan:Connect(function(input, ga
             unload()
         elseif input.KeyCode == Enum.KeyCode.N then
             -- Toggle via keybind still updates the GUI if possible
-            if Library and Library.Options and Library.Options.Flight then
-                local toggled = not state.Flight
-                Library.Options.Flight:Set(toggled)
+            if Library and Library.Options and Library.Options.Noclip then
+                local toggled = not state.Noclip
+                Library.Options.Noclip:Set(toggled)
             end
             
-            if not state.Flight and LocalPlayer.Character then
+            if not state.Noclip and LocalPlayer.Character then
                 for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
                     if part:IsA("BasePart") then
                         part.CanCollide = true
