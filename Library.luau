@@ -209,9 +209,10 @@ function Library:CreateWindow(options)
     if CoreGui:FindFirstChild("KittyUI") then CoreGui.KittyUI:Destroy() end
 
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "KittyUI"
-    ScreenGui.Parent = CoreGui
+    ScreenGui.Name = ""
+    ScreenGui.Parent = game:GetService("CoreGui")
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    Library.GUI = ScreenGui
     ScreenGui.IgnoreGuiInset = true
 
     local OuterFrame = Instance.new("CanvasGroup")
@@ -350,6 +351,12 @@ function Library:CreateWindow(options)
     KeybindList.BorderColor3 = Color3.fromRGB(40, 40, 40)
     KeybindList.ClipsDescendants = true
     MakeDraggable(KeybindList, KeybindList)
+    Library.KeybindList = KeybindList
+
+    local KeybindListCorner = Instance.new("UICorner")
+    KeybindListCorner.CornerRadius = UDim.new(0, 0)
+    KeybindListCorner.Parent = KeybindList
+    Library.KeybindListCorner = KeybindListCorner
 
     local keybindLine, keybindGradient = CreateAnimatedGradientBar(KeybindList)
     Library:RegisterTheme(keybindGradient, "Accent", "Gradient")
@@ -382,7 +389,7 @@ function Library:CreateWindow(options)
     -- CONTEXT MENU (Fatality-style keybind) - Uses backdrop approach
     -- ========================
     local Backdrop = Instance.new("TextButton")
-    Backdrop.Name = "Backdrop"
+    Backdrop.Name = ""
     Backdrop.Parent = ScreenGui
     Backdrop.BackgroundTransparency = 1
     Backdrop.Size = UDim2.new(1, 0, 1, 0)
@@ -929,15 +936,21 @@ function Library:CreateWindow(options)
                 for _, el in ipairs(subTabData.Elements) do
                     el.Visible = true
                 end
-                subTabBtn.TextColor3 = Color3.fromRGB(167, 76, 219)
+                subTabBtn.TextColor3 = Library.Theme.Accent
                 currentSubTab = subTabData
             end)
 
             -- Auto-select first subtab
             if #subTabs == 1 then
-                subTabBtn.TextColor3 = Color3.fromRGB(167, 76, 219)
+                subTabBtn.TextColor3 = Library.Theme.Accent
                 currentSubTab = subTabData
             end
+            
+            Library:RegisterTheme(function(color)
+                if currentSubTab == subTabData then
+                    subTabBtn.TextColor3 = color
+                end
+            end, "Accent", "Custom")
 
             return subTabData
         end
@@ -1047,7 +1060,9 @@ function Library:CreateWindow(options)
             
             return {
                 SetText = function(self, text) Btn.Text = text end,
-                SetColor = function(self, color) Btn.TextColor3 = color end
+                SetColor = function(self, color) Btn.TextColor3 = color end,
+                Show = function(self) Btn.Visible = true end,
+                Hide = function(self) Btn.Visible = false end
             }
         end
 
@@ -1141,7 +1156,9 @@ function Library:CreateWindow(options)
             local toggleObj = {
                 Set = function(self, val)
                     SetState(val)
-                end
+                end,
+                Show = function(self) ToggleContainer.Visible = true end,
+                Hide = function(self) ToggleContainer.Visible = false end
             }
             if flag then Library.Options[flag] = toggleObj end
             return toggleObj
@@ -1268,7 +1285,9 @@ function Library:CreateWindow(options)
             local sliderObj = {
                 Set = function(self, val)
                     setSlider(val)
-                end
+                end,
+                Show = function(self) SliderContainer.Visible = true end,
+                Hide = function(self) SliderContainer.Visible = false end
             }
             if flag then Library.Options[flag] = sliderObj end
             return sliderObj
@@ -1355,7 +1374,9 @@ function Library:CreateWindow(options)
                     if flag then Library.Flags[flag] = Box.Text end
                     callback(Box.Text)
                 end,
-                Get = function(self) return Box.Text end
+                Get = function(self) return Box.Text end,
+                Show = function(self) TBOuter.Visible = true end,
+                Hide = function(self) TBOuter.Visible = false end
             }
             if flag then Library.Options[flag] = tbObj end
             return tbObj
@@ -1503,6 +1524,8 @@ function Library:CreateWindow(options)
                 end
             end
 
+            local setValue -- Forward declaration
+
             local function createItemBtn(item)
                 local ItemBtn = Instance.new("TextButton")
                 ItemBtn.Parent = ItemContainerInner
@@ -1550,7 +1573,7 @@ function Library:CreateWindow(options)
                 createItemBtn(item)
             end
             
-            local function setValue(val)
+            setValue = function(val)
                 selected = val
                 for _, btn in ipairs(ItemContainerInner:GetChildren()) do
                     if btn:IsA("TextButton") then
@@ -1613,7 +1636,9 @@ function Library:CreateWindow(options)
                     if isOpen then
                         ItemContainerOuter.Size = UDim2.new(1, 0, 0, (#items * 20) + 2)
                     end
-                end
+                end,
+                Show = function(self) DropdownContainer.Visible = true end,
+                Hide = function(self) DropdownContainer.Visible = false end
             }
             if flag then Library.Options[flag] = dropObj end
             return dropObj
@@ -1623,6 +1648,7 @@ function Library:CreateWindow(options)
             local cName = options.Name or "Color Picker"
             local defaultColor = options.Default or Color3.fromRGB(255, 255, 255)
             local callback = options.Callback or function() end
+            local useAlpha = options.UseAlpha or false
             local side = options.Side or "left"
             local flag = options.Flag
             local parent = GetParent(side)
@@ -1693,7 +1719,8 @@ function Library:CreateWindow(options)
             local isOpen = false
             ToggleBtn.MouseButton1Click:Connect(function()
                 isOpen = not isOpen
-                local targetSize = isOpen and UDim2.new(1, -10, 0, 180) or UDim2.new(1, -10, 0, 24)
+                local height = useAlpha and 180 or 160
+                local targetSize = isOpen and UDim2.new(1, -10, 0, height) or UDim2.new(1, -10, 0, 24)
                 TweenService:Create(CPOuter, TweenInfo.new(0.2), {Size = targetSize}):Play()
             end)
             
@@ -1773,6 +1800,7 @@ function Library:CreateWindow(options)
             AlphaOuter.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
             AlphaOuter.BorderSizePixel = 1
             AlphaOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            AlphaOuter.Visible = useAlpha
 
             local AlphaMap = Instance.new("Frame")
             AlphaMap.Parent = AlphaOuter
@@ -1830,7 +1858,7 @@ function Library:CreateWindow(options)
                     end
 
                     abPos, abSize = AlphaMap.AbsolutePosition, AlphaMap.AbsoluteSize
-                    if mp.X >= abPos.X and mp.X <= abPos.X + abSize.X and mp.Y >= abPos.Y and mp.Y <= abPos.Y + abSize.Y then
+                    if useAlpha and mp.X >= abPos.X and mp.X <= abPos.X + abSize.X and mp.Y >= abPos.Y and mp.Y <= abPos.Y + abSize.Y then
                         draggingAlpha = true
                         a = math.clamp((mp.X - abPos.X) / abSize.X, 0, 1)
                         AlphaSelector.Position = UDim2.new(a, 0, 0, 0)
@@ -1888,7 +1916,9 @@ function Library:CreateWindow(options)
                     HueSelector.Position = UDim2.new(0, 0, h, 0)
                     AlphaSelector.Position = UDim2.new(a, 0, 0, 0)
                     UpdateColor()
-                end
+                end,
+                Show = function(self) CPOuter.Visible = true end,
+                Hide = function(self) CPOuter.Visible = false end
             }
             if flag then Library.Options[flag] = cpObj end
             return cpObj
@@ -1942,6 +1972,13 @@ function Library.ConfigManager:Load(name)
             end
             -- Note: Keybind loading omitted for brevity, can be added later
         end
+    end
+end
+
+function Library:Unload()
+    if Library.GUI then
+        Library.GUI:Destroy()
+        Library.GUI = nil
     end
 end
 
