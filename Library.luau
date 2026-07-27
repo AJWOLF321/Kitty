@@ -864,7 +864,6 @@ function Library:CreateWindow(options)
             TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
             TabAccent.Visible = true
             BottomCover.Visible = true
-            Library:CloseAllColorPickers()
         end)
 
         if #WindowObj.Tabs == 1 then
