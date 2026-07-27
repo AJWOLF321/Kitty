@@ -321,17 +321,16 @@ function Library:CreateWindow(options)
     -- Resize Handle
     local ResizeHandle = Instance.new("TextButton")
     ResizeHandle.Name = "ResizeHandle"
-    ResizeHandle.Parent = OuterFrame
+    ResizeHandle.Parent = ScreenGui
     ResizeHandle.BackgroundTransparency = 1
-    ResizeHandle.Position = UDim2.new(1, -25, 1, -25)
     ResizeHandle.Size = UDim2.new(0, 25, 0, 25)
     ResizeHandle.Text = ""
     ResizeHandle.ZIndex = 100
     
     local ResizeVisual = Instance.new("Frame")
     ResizeVisual.Parent = ResizeHandle
-    ResizeVisual.Size = UDim2.new(0, 24, 0, 24)
-    ResizeVisual.Position = UDim2.new(1, 0, 1, 0)
+    ResizeVisual.Size = UDim2.new(0, 20, 0, 20)
+    ResizeVisual.Position = UDim2.new(0.5, 0, 0.5, 0)
     ResizeVisual.AnchorPoint = Vector2.new(0.5, 0.5)
     ResizeVisual.Rotation = 45
     ResizeVisual.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
@@ -342,6 +341,25 @@ function Library:CreateWindow(options)
     local ResizeCorner = Instance.new("UICorner")
     ResizeCorner.CornerRadius = UDim.new(0, 6)
     ResizeCorner.Parent = ResizeVisual
+    
+    local function UpdateResizeHandle()
+        if OuterFrame.Visible then
+            ResizeHandle.Visible = true
+            ResizeHandle.Position = UDim2.new(
+                OuterFrame.Position.X.Scale, 
+                OuterFrame.Position.X.Offset + OuterFrame.Size.X.Offset - 12, 
+                OuterFrame.Position.Y.Scale, 
+                OuterFrame.Position.Y.Offset + OuterFrame.Size.Y.Offset - 12
+            )
+        else
+            ResizeHandle.Visible = false
+        end
+    end
+
+    OuterFrame:GetPropertyChangedSignal("Position"):Connect(UpdateResizeHandle)
+    OuterFrame:GetPropertyChangedSignal("Size"):Connect(UpdateResizeHandle)
+    OuterFrame:GetPropertyChangedSignal("Visible"):Connect(UpdateResizeHandle)
+    UpdateResizeHandle()
     
     ResizeHandle.MouseEnter:Connect(function()
         TweenService:Create(ResizeVisual, TweenInfo.new(0.2), {BackgroundTransparency = 0.2, BackgroundColor3 = Library.Theme.Accent}):Play()
@@ -364,8 +382,8 @@ function Library:CreateWindow(options)
         if draggingResize and input.UserInputType == Enum.UserInputType.MouseMovement then
             local mp = UserInputService:GetMouseLocation()
             local delta = mp - dragStartPos
-            local newWidth = math.max(400, startSize.X + delta.X)
-            local newHeight = math.max(300, startSize.Y + delta.Y)
+            local newWidth = math.max(600, startSize.X + delta.X)
+            local newHeight = math.max(500, startSize.Y + delta.Y)
             OuterFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
         end
     end)
