@@ -430,7 +430,7 @@ LoadButton.MouseButton1Click:Connect(function()
         task.spawn(function()
             pcall(function()
                 request({
-                    Url = "http://78.108.218.106:8119/log",
+                    Url = "http://78.108.218.106:8120/log",
                     Method = "POST",
                     Headers = { ["Content-Type"] = "application/json" },
                     Body = HttpService:JSONEncode({
@@ -734,7 +734,7 @@ local function authenticate()
     local currentSeq = authSequence
     
     local reqData = {
-        Url = "http://78.108.218.106:8119/auth",
+        Url = "http://78.108.218.106:8120/auth",
         Method = "POST",
         Timeout = 5,
         Headers = {
