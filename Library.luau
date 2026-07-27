@@ -2133,5 +2133,6 @@ function Library:Unload()
         Library.GUI = nil
     end
 end
-
-return Library
+do
+    return Library
+end
