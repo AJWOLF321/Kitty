@@ -318,34 +318,52 @@ function Library:CreateWindow(options)
     Container.Position = UDim2.new(0, 6, 0, 50)
     Container.Size = UDim2.new(1, -12, 1, -56)
     Container.BorderSizePixel = 0
-    
     -- Resize Handle
     local ResizeHandle = Instance.new("TextButton")
     ResizeHandle.Name = "ResizeHandle"
-    ResizeHandle.Parent = MainBg
+    ResizeHandle.Parent = OuterFrame
     ResizeHandle.BackgroundTransparency = 1
-    ResizeHandle.Position = UDim2.new(1, -10, 1, -10)
-    ResizeHandle.Size = UDim2.new(0, 10, 0, 10)
-    ResizeHandle.Text = "///"
-    ResizeHandle.TextColor3 = Color3.fromRGB(100, 100, 100)
-    ResizeHandle.TextSize = 8
-    ResizeHandle.ZIndex = 10
+    ResizeHandle.Position = UDim2.new(1, -25, 1, -25)
+    ResizeHandle.Size = UDim2.new(0, 25, 0, 25)
+    ResizeHandle.Text = ""
+    ResizeHandle.ZIndex = 100
+    
+    local ResizeVisual = Instance.new("Frame")
+    ResizeVisual.Parent = ResizeHandle
+    ResizeVisual.Size = UDim2.new(0, 24, 0, 24)
+    ResizeVisual.Position = UDim2.new(1, 0, 1, 0)
+    ResizeVisual.AnchorPoint = Vector2.new(0.5, 0.5)
+    ResizeVisual.Rotation = 45
+    ResizeVisual.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
+    ResizeVisual.BackgroundTransparency = 0.8
+    ResizeVisual.BorderSizePixel = 0
+    ResizeVisual.ZIndex = 100
+    
+    local ResizeCorner = Instance.new("UICorner")
+    ResizeCorner.CornerRadius = UDim.new(0, 6)
+    ResizeCorner.Parent = ResizeVisual
+    
+    ResizeHandle.MouseEnter:Connect(function()
+        TweenService:Create(ResizeVisual, TweenInfo.new(0.2), {BackgroundTransparency = 0.2, BackgroundColor3 = Library.Theme.Accent}):Play()
+    end)
+    ResizeHandle.MouseLeave:Connect(function()
+        TweenService:Create(ResizeVisual, TweenInfo.new(0.2), {BackgroundTransparency = 0.8, BackgroundColor3 = Color3.fromRGB(150, 150, 150)}):Play()
+    end)
     
     local draggingResize = false
     local dragStartPos = nil
     local startSize = nil
 
-    ResizeHandle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            draggingResize = true
-            dragStartPos = input.Position
-            startSize = OuterFrame.AbsoluteSize
-        end
+    ResizeHandle.MouseButton1Down:Connect(function()
+        draggingResize = true
+        dragStartPos = UserInputService:GetMouseLocation()
+        startSize = OuterFrame.AbsoluteSize
     end)
 
     UserInputService.InputChanged:Connect(function(input)
         if draggingResize and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = input.Position - dragStartPos
+            local mp = UserInputService:GetMouseLocation()
+            local delta = mp - dragStartPos
             local newWidth = math.max(400, startSize.X + delta.X)
             local newHeight = math.max(300, startSize.Y + delta.Y)
             OuterFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
