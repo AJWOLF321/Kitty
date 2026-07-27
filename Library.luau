@@ -220,7 +220,7 @@ function Library:CreateWindow(options)
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "KittyUI"
     ScreenGui.Parent = CoreGui
-    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
     ScreenGui.IgnoreGuiInset = true
 
     local OuterFrame = Instance.new("CanvasGroup")
