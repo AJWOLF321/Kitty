@@ -350,6 +350,7 @@ function Library:CreateWindow(options)
     KeybindList.BorderSizePixel = 1
     KeybindList.BorderColor3 = Color3.fromRGB(40, 40, 40)
     KeybindList.ClipsDescendants = true
+    KeybindList.Visible = false
     MakeDraggable(KeybindList, KeybindList)
     Library.KeybindList = KeybindList
 
