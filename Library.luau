@@ -82,20 +82,11 @@ function Library:SetTheme(themeType, color, alpha)
 
     for _, obj in ipairs(Library.ThemeObjects[themeType]) do
         if obj.Type == 'BackgroundColor3' then 
-            pcall(function() 
-                obj.Inst.BackgroundColor3 = color 
-                if themeType == "Main" or themeType == "Background" then obj.Inst.BackgroundTransparency = trans end
-            end)
+            pcall(function() obj.Inst.BackgroundColor3 = color end)
         elseif obj.Type == 'BackgroundColor3+1' then 
-            pcall(function() 
-                obj.Inst.BackgroundColor3 = colorPlus1 
-                if themeType == "Main" or themeType == "Background" then obj.Inst.BackgroundTransparency = trans end
-            end)
+            pcall(function() obj.Inst.BackgroundColor3 = colorPlus1 end)
         elseif obj.Type == 'BackgroundColor3+2' then 
-            pcall(function() 
-                obj.Inst.BackgroundColor3 = colorPlus2 
-                if themeType == "Main" or themeType == "Background" then obj.Inst.BackgroundTransparency = trans end
-            end)
+            pcall(function() obj.Inst.BackgroundColor3 = colorPlus2 end)
         elseif obj.Type == 'TextColor3' then pcall(function() obj.Inst.TextColor3 = color end)
         elseif obj.Type == 'BorderColor3' then pcall(function() obj.Inst.BorderColor3 = color end)
         elseif obj.Type == 'Gradient' then
@@ -110,7 +101,7 @@ function Library:SetTheme(themeType, color, alpha)
                 })
             end)
         elseif obj.Type == 'Custom' then
-            pcall(function() obj.Inst(color) end)
+            pcall(function() obj.Inst(color, alpha) end)
         end
     end
 end
@@ -138,7 +129,7 @@ function Library:RegisterTheme(inst, themeType, propType)
             })
         end)
     elseif propType == 'Custom' then
-        pcall(function() inst(color) end)
+        pcall(function() inst(color, 1) end)
     end
 end
 
@@ -231,6 +222,10 @@ function Library:CreateWindow(options)
     OuterFrame.BorderSizePixel = 1
     OuterFrame.BorderColor3 = Color3.fromRGB(30, 30, 30)
     OuterFrame.Parent = ScreenGui
+
+    Library:RegisterTheme(function(color, alpha)
+        OuterFrame.GroupTransparency = 1 - (alpha or 1)
+    end, "Background", "Custom")
 
     local InnerFrame = Instance.new("Frame")
     InnerFrame.Name = "InnerFrame"
@@ -861,7 +856,7 @@ function Library:CreateWindow(options)
             Library.OnTabChange:Fire()
             TabPage.Visible = true
             TabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-            TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            TabBtn.TextColor3 = Library.Theme.Accent
             TabAccent.Visible = true
             BottomCover.Visible = true
         end)
@@ -870,10 +865,16 @@ function Library:CreateWindow(options)
             WindowObj.CurrentTab = name
             TabPage.Visible = true
             TabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-            TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            TabBtn.TextColor3 = Library.Theme.Accent
             TabAccent.Visible = true
             BottomCover.Visible = true
         end
+        
+        Library:RegisterTheme(function(color)
+            if WindowObj.CurrentTab == name then
+                TabBtn.TextColor3 = color
+            end
+        end, "Accent", "Custom")
 
         -- ========================
         -- TAB API
@@ -1101,7 +1102,7 @@ function Library:CreateWindow(options)
             local function SetState(newState)
                 state = newState
                 if flag then Library.Flags[flag] = state end
-                CheckBox.BackgroundColor3 = state and Library.Theme.Accent or Color3.fromRGB(30, 30, 30)
+                TweenService:Create(CheckBox, TweenInfo.new(0.15, Enum.EasingStyle.Sine), {BackgroundColor3 = state and Library.Theme.Accent or Color3.fromRGB(30, 30, 30)}):Play()
                 callback(state)
             end
 
@@ -1130,7 +1131,7 @@ function Library:CreateWindow(options)
 
             Library:RegisterTheme(function(color)
                 if state then
-                    CheckBox.BackgroundColor3 = color
+                    TweenService:Create(CheckBox, TweenInfo.new(0.15, Enum.EasingStyle.Sine), {BackgroundColor3 = color}):Play()
                 end
             end, "Accent", "Custom")
 
@@ -1223,7 +1224,7 @@ function Library:CreateWindow(options)
             local function setSlider(value)
                 value = math.clamp(math.floor(tonumber(value) or min), min, max)
                 local pct = (value - min) / (max - min)
-                TweenService:Create(Fill, TweenInfo.new(0.05), {Size = UDim2.new(pct, 0, 1, 0)}):Play()
+                TweenService:Create(Fill, TweenInfo.new(0.15, Enum.EasingStyle.Sine), {Size = UDim2.new(pct, 0, 1, 0)}):Play()
                 ValueLabel.Text = tostring(value) .. "/" .. tostring(max)
                 if flag then Library.Flags[flag] = value end
                 callback(value)
@@ -1469,9 +1470,14 @@ function Library:CreateWindow(options)
                 isOpen = not isOpen
                 if isOpen then
                     ItemContainerOuter.Visible = true
-                    ItemContainerOuter.Size = UDim2.new(1, 0, 0, (#items * 20) + 2)
+                    ItemContainerOuter.Size = UDim2.new(1, 0, 0, 0)
+                    TweenService:Create(ItemContainerOuter, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 0, (#items * 20) + 2)}):Play()
                 else
-                    ItemContainerOuter.Visible = false
+                    local tween = TweenService:Create(ItemContainerOuter, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 0, 0)})
+                    tween.Completed:Connect(function()
+                        if not isOpen then ItemContainerOuter.Visible = false end
+                    end)
+                    tween:Play()
                 end
                 Icon.Text = isOpen and "-" or "+"
             end)
@@ -1480,6 +1486,7 @@ function Library:CreateWindow(options)
                 if isOpen then
                     isOpen = false
                     ItemContainerOuter.Visible = false
+                    ItemContainerOuter.Size = UDim2.new(1, 0, 0, 0)
                     Icon.Text = "+"
                 end
             end)
@@ -1527,13 +1534,14 @@ function Library:CreateWindow(options)
                         if flag then Library.Flags[flag] = selected end
                         callback(selected)
                     else
-                        selected = item
-                        updateSelectedText()
+                        setValue(item)
                         isOpen = false
-                        ItemContainerOuter.Visible = false
+                        local tween = TweenService:Create(ItemContainerOuter, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 0, 0)})
+                        tween.Completed:Connect(function()
+                            if not isOpen then ItemContainerOuter.Visible = false end
+                        end)
+                        tween:Play()
                         Icon.Text = "+"
-                        if flag then Library.Flags[flag] = selected end
-                        callback(item)
                     end
                 end)
             end
@@ -1544,14 +1552,16 @@ function Library:CreateWindow(options)
             
             local function setValue(val)
                 selected = val
-                if multi then
-                    for _, btn in ipairs(ItemContainerInner:GetChildren()) do
-                        if btn:IsA("TextButton") then
+                for _, btn in ipairs(ItemContainerInner:GetChildren()) do
+                    if btn:IsA("TextButton") then
+                        if multi then
                             local found = false
                             for _, v in ipairs(val) do
                                 if v == btn.Text then found = true break end
                             end
-                            btn.TextColor3 = found and Color3.fromRGB(167, 76, 219) or Color3.fromRGB(200, 200, 200)
+                            btn.TextColor3 = found and Library.Theme.Accent or Color3.fromRGB(200, 200, 200)
+                        else
+                            btn.TextColor3 = (val == btn.Text) and Library.Theme.Accent or Color3.fromRGB(200, 200, 200)
                         end
                     end
                 end
@@ -1571,6 +1581,23 @@ function Library:CreateWindow(options)
             Library:RegisterTheme(DropdownInner, "Main", "BackgroundColor3+1")
             Library:RegisterTheme(ItemContainerOuter, "Main", "BackgroundColor3")
             Library:RegisterTheme(ItemContainerInner, "Main", "BackgroundColor3+1")
+            
+            Library:RegisterTheme(function(color)
+                for _, btn in ipairs(ItemContainerInner:GetChildren()) do
+                    if btn:IsA("TextButton") then
+                        if multi then
+                            local found = false
+                            for _, v in ipairs(selected or {}) do
+                                if v == btn.Text then found = true break end
+                            end
+                            if found then btn.TextColor3 = color end
+                        else
+                            if selected == btn.Text then btn.TextColor3 = color end
+                        end
+                    end
+                end
+            end, "Accent", "Custom")
+
             TrackElement(DropdownContainer)
             local dropObj = {
                 Set = function(self, val) setValue(val) end,
