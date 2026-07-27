@@ -344,46 +344,18 @@ function Library:CreateWindow(options)
     local KeybindList = Instance.new("Frame")
     KeybindList.Name = "KeybindList"
     KeybindList.Parent = ScreenGui
-    KeybindList.BackgroundTransparency = 1
+    KeybindList.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
     KeybindList.Position = UDim2.new(0, 20, 0.5, 0)
     KeybindList.Size = UDim2.new(0, 180, 0, 25)
-    KeybindList.BorderSizePixel = 0
-    KeybindList.ClipsDescendants = false
+    KeybindList.BorderSizePixel = 1
+    KeybindList.BorderColor3 = Color3.fromRGB(40, 40, 40)
+    KeybindList.ClipsDescendants = true
     KeybindList.Visible = false
     MakeDraggable(KeybindList, KeybindList)
     Library.KeybindList = KeybindList
     
-    local KeybindListStroke = Instance.new("UIStroke")
-    KeybindListStroke.Parent = KeybindList
-    KeybindListStroke.Color = Color3.fromRGB(40, 40, 40)
-    KeybindListStroke.Thickness = 1
-
     local keybindLine, keybindGradient = CreateAnimatedGradientBar(KeybindList)
-    keybindLine.Size = UDim2.new(1, 0, 1, 0)
     Library:RegisterTheme(keybindGradient, "Accent", "Gradient")
-
-    local KeybindListBg = Instance.new("Frame")
-    KeybindListBg.Name = "KeybindListBg"
-    KeybindListBg.Parent = KeybindList
-    KeybindListBg.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    KeybindListBg.Position = UDim2.new(0, 0, 0, 2)
-    KeybindListBg.Size = UDim2.new(1, 0, 1, -2)
-    KeybindListBg.BorderSizePixel = 0
-    KeybindListBg.ZIndex = 2
-
-    local KeybindListCorner = Instance.new("UICorner")
-    KeybindListCorner.CornerRadius = UDim.new(0, 0)
-    KeybindListCorner.Parent = KeybindList
-    
-    local bgCorner = Instance.new("UICorner")
-    bgCorner.CornerRadius = UDim.new(0, 0)
-    bgCorner.Parent = KeybindListBg
-    
-    local lineCorner = Instance.new("UICorner")
-    lineCorner.CornerRadius = UDim.new(0, 0)
-    lineCorner.Parent = keybindLine
-    
-    Library.KeybindListCorners = {KeybindListCorner, bgCorner, lineCorner}
 
     local KeybindListTitle = Instance.new("TextLabel")
     KeybindListTitle.Parent = KeybindList
@@ -393,10 +365,9 @@ function Library:CreateWindow(options)
     KeybindListTitle.Text = "Keybinds"
     KeybindListTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
     KeybindListTitle.TextSize = 13
-    KeybindListTitle.ZIndex = 3
     ApplyFont(KeybindListTitle)
     
-    Library:RegisterTheme(KeybindListBg, "Background", "BackgroundColor3")
+    Library:RegisterTheme(KeybindList, "Background", "BackgroundColor3")
     Library:RegisterTheme(KeybindListTitle, "Text", "TextColor3")
 
     local KeybindContainer = Instance.new("Frame")
