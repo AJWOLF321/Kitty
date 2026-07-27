@@ -1064,6 +1064,62 @@ function Library:CreateWindow(options)
             }
         end
 
+        function Tab:CreateTextBox(options)
+            local tName = options.Name or "TextBox"
+            local default = options.Default or ""
+            local clearOnFocus = options.ClearOnFocus
+            if clearOnFocus == nil then clearOnFocus = true end
+            local callback = options.Callback or function() end
+            local side = options.Side or "left"
+            local flag = options.Flag
+            local parent = GetParent(side)
+
+            local TBox = Instance.new("TextBox")
+            TBox.Size = UDim2.new(1, 0, 0, 25)
+            TBox.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+            TBox.Text = default ~= "" and default or tName
+            TBox.PlaceholderText = tName
+            TBox.TextColor3 = Color3.fromRGB(200, 200, 200)
+            TBox.TextSize = 12
+            TBox.BorderSizePixel = 1
+            TBox.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            TBox.ClearTextOnFocus = clearOnFocus
+            TBox.Parent = parent
+            ApplyFont(TBox)
+
+            Library:RegisterTheme(TBox, "Text", "TextColor3")
+
+            TBox.MouseEnter:Connect(function() 
+                TBox.BorderColor3 = Library.Theme.Accent 
+            end)
+            TBox.MouseLeave:Connect(function() 
+                TBox.BorderColor3 = Color3.fromRGB(40, 40, 40) 
+            end)
+
+            TBox.FocusLost:Connect(function(enterPressed)
+                if enterPressed then
+                    callback(TBox.Text)
+                end
+            end)
+
+            TrackElement(TBox)
+            
+            local tboxObj = {
+                SetText = function(self, text) TBox.Text = text end,
+                SetColor = function(self, color) TBox.TextColor3 = color end,
+                Show = function(self) TBox.Visible = true end,
+                Hide = function(self) TBox.Visible = false end,
+                Inst = TBox
+            }
+
+            if flag then
+                Library.Options[flag] = tboxObj
+                Library.Flags[flag] = default
+            end
+
+            return tboxObj
+        end
+
         function Tab:CreateToggle(options)
             local tName = options.Name or "Toggle"
             local default = options.Default or false
@@ -1922,6 +1978,60 @@ function Library:CreateWindow(options)
             return cpObj
         end
 
+        function Tab:CreateViewport(options)
+            local vName = options.Name or "Viewport"
+            local height = options.Height or 200
+            local side = options.Side or "right"
+            local parent = GetParent(side)
+
+            local VOuter = Instance.new("Frame")
+            VOuter.Parent = parent
+            VOuter.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+            VOuter.Size = UDim2.new(1, -10, 0, height)
+            VOuter.BorderSizePixel = 1
+            VOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
+
+            local VTitle = Instance.new("TextLabel")
+            VTitle.Parent = VOuter
+            VTitle.BackgroundTransparency = 1
+            VTitle.Position = UDim2.new(0, 5, 0, 0)
+            VTitle.Size = UDim2.new(1, -10, 0, 20)
+            VTitle.Text = vName
+            VTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+            VTitle.TextSize = 12
+            VTitle.TextXAlignment = Enum.TextXAlignment.Left
+            ApplyFont(VTitle)
+
+            local Viewport = Instance.new("ViewportFrame")
+            Viewport.Parent = VOuter
+            Viewport.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            Viewport.BorderSizePixel = 1
+            Viewport.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            Viewport.Position = UDim2.new(0, 5, 0, 20)
+            Viewport.Size = UDim2.new(1, -10, 1, -25)
+            Viewport.LightColor = Color3.fromRGB(255, 255, 255)
+            Viewport.LightDirection = Vector3.new(0, -1, 0)
+            Viewport.Ambient = Color3.fromRGB(150, 150, 150)
+
+            local Camera = Instance.new("Camera")
+            Viewport.CurrentCamera = Camera
+            Camera.Parent = Viewport
+
+            Library:RegisterTheme(VOuter, "Main", "BackgroundColor3")
+            Library:RegisterTheme(Viewport, "Main", "BackgroundColor3+1")
+            Library:RegisterTheme(VTitle, "Text", "TextColor3")
+
+            TrackElement(VOuter)
+
+            local vpObj = {
+                Viewport = Viewport,
+                Camera = Camera,
+                Show = function(self) VOuter.Visible = true end,
+                Hide = function(self) VOuter.Visible = false end
+            }
+            return vpObj
+        end
+
         return Tab
     end
 
@@ -1970,6 +2080,17 @@ function Library.ConfigManager:Load(name)
             end
             -- Note: Keybind loading omitted for brevity, can be added later
         end
+    end
+end
+
+function Library.ConfigManager:Rename(oldName, newName)
+    local FolderLocation = 'KittyAuth'
+    local oldPath = FolderLocation..'\\Configs\\'..oldName..'.json'
+    local newPath = FolderLocation..'\\Configs\\'..newName..'.json'
+    
+    if isfile(oldPath) then
+        writefile(newPath, readfile(oldPath))
+        delfile(oldPath)
     end
 end
 
