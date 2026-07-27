@@ -970,11 +970,13 @@ function Library:CreateWindow(options)
                 currentSubTab = subTabData
             end)
 
-            -- Auto-select first subtab
+            -- Auto-select first subtab visually
             if #subTabs == 1 then
                 subTabBtn.TextColor3 = Library.Theme.Accent
-                currentSubTab = subTabData
             end
+            
+            -- Set currentSubTab so subsequent elements are added to this subtab
+            currentSubTab = subTabData
             
             Library:RegisterTheme(function(color)
                 if currentSubTab == subTabData then
