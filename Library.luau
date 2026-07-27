@@ -341,18 +341,22 @@ function Library:CreateWindow(options)
     -- ========================
     -- KEYBINDS LIST (draggable side panel)
     -- ========================
-    local KeybindList = Instance.new("Frame")
+    local KeybindList = Instance.new("CanvasGroup")
     KeybindList.Name = "KeybindList"
     KeybindList.Parent = ScreenGui
     KeybindList.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
     KeybindList.Position = UDim2.new(0, 20, 0.5, 0)
     KeybindList.Size = UDim2.new(0, 180, 0, 25)
-    KeybindList.BorderSizePixel = 1
-    KeybindList.BorderColor3 = Color3.fromRGB(40, 40, 40)
+    KeybindList.BorderSizePixel = 0
     KeybindList.ClipsDescendants = true
     KeybindList.Visible = false
     MakeDraggable(KeybindList, KeybindList)
     Library.KeybindList = KeybindList
+    
+    local KeybindListStroke = Instance.new("UIStroke")
+    KeybindListStroke.Parent = KeybindList
+    KeybindListStroke.Color = Color3.fromRGB(40, 40, 40)
+    KeybindListStroke.Thickness = 1
 
     local KeybindListCorner = Instance.new("UICorner")
     KeybindListCorner.CornerRadius = UDim.new(0, 0)
