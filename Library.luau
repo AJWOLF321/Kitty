@@ -318,6 +318,45 @@ function Library:CreateWindow(options)
     Container.Position = UDim2.new(0, 6, 0, 50)
     Container.Size = UDim2.new(1, -12, 1, -56)
     Container.BorderSizePixel = 0
+    
+    -- Resize Handle
+    local ResizeHandle = Instance.new("TextButton")
+    ResizeHandle.Name = "ResizeHandle"
+    ResizeHandle.Parent = MainBg
+    ResizeHandle.BackgroundTransparency = 1
+    ResizeHandle.Position = UDim2.new(1, -10, 1, -10)
+    ResizeHandle.Size = UDim2.new(0, 10, 0, 10)
+    ResizeHandle.Text = "///"
+    ResizeHandle.TextColor3 = Color3.fromRGB(100, 100, 100)
+    ResizeHandle.TextSize = 8
+    ResizeHandle.ZIndex = 10
+    
+    local draggingResize = false
+    local dragStartPos = nil
+    local startSize = nil
+
+    ResizeHandle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            draggingResize = true
+            dragStartPos = input.Position
+            startSize = OuterFrame.AbsoluteSize
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if draggingResize and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStartPos
+            local newWidth = math.max(400, startSize.X + delta.X)
+            local newHeight = math.max(300, startSize.Y + delta.Y)
+            OuterFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            draggingResize = false
+        end
+    end)
 
     -- Insert toggle
     Library.ToggleKey = Enum.KeyCode.Insert
