@@ -457,6 +457,8 @@ function Library:CreateWindow(options)
     HotbarLayout.Parent = HotbarContainer
     HotbarLayout.SortOrder = Enum.SortOrder.LayoutOrder
     HotbarLayout.FillDirection = Enum.FillDirection.Horizontal
+    HotbarLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    HotbarLayout.VerticalAlignment = Enum.VerticalAlignment.Center
     HotbarLayout.Padding = UDim.new(0, 2)
     
     function Library:UpdateHotbar(title, items)
