@@ -1408,6 +1408,7 @@ function Library:CreateWindow(options)
             local callback = options.Callback or function() end
             local side = options.Side or "left"
             local flag = options.Flag
+            local rounding = options.Rounding or 0
             local parent = GetParent(side)
 
             if flag then
@@ -1475,10 +1476,16 @@ function Library:CreateWindow(options)
             local dragging = false
 
             local function setSlider(value)
-                value = math.clamp(math.floor(tonumber(value) or min), min, max)
+                local num = tonumber(value) or min
+                local power = 10 ^ rounding
+                num = math.floor(num * power + 0.5) / power
+                value = math.clamp(num, min, max)
                 local pct = (value - min) / (max - min)
                 TweenService:Create(Fill, TweenInfo.new(0.15, Enum.EasingStyle.Sine), {Size = UDim2.new(pct, 0, 1, 0)}):Play()
-                ValueLabel.Text = tostring(value) .. "/" .. tostring(max)
+                
+                local fmt = "%." .. rounding .. "f"
+                ValueLabel.Text = string.format(fmt, value) .. "/" .. string.format(fmt, max)
+                
                 if flag then Library.Flags[flag] = value end
                 callback(value)
             end
@@ -1491,7 +1498,7 @@ function Library:CreateWindow(options)
             local function update(input)
                 local pos = math.clamp(input.Position.X - TrackInner.AbsolutePosition.X, 0, TrackInner.AbsoluteSize.X)
                 local pct = pos / TrackInner.AbsoluteSize.X
-                local value = math.floor(min + (max - min) * pct)
+                local value = min + (max - min) * pct
                 setSlider(value)
             end
 
