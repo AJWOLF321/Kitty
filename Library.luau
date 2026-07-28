@@ -415,6 +415,85 @@ function Library:CreateWindow(options)
     KeybindLayout.Padding = UDim.new(0, 2)
 
     -- ========================
+    -- HOTBAR VIEWER (draggable side panel)
+    -- ========================
+    local HotbarViewer = Instance.new("Frame")
+    HotbarViewer.Name = "HotbarViewer"
+    HotbarViewer.Parent = ScreenGui
+    HotbarViewer.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    HotbarViewer.Position = UDim2.new(0, 20, 0.5, 30)
+    HotbarViewer.Size = UDim2.new(0, 180, 0, 25)
+    HotbarViewer.BorderSizePixel = 1
+    HotbarViewer.BorderColor3 = Color3.fromRGB(40, 40, 40)
+    HotbarViewer.ClipsDescendants = true
+    HotbarViewer.Visible = false
+    MakeDraggable(HotbarViewer, HotbarViewer)
+    Library.HotbarViewer = HotbarViewer
+    
+    local hotbarLine, hotbarGradient = CreateAnimatedGradientBar(HotbarViewer)
+    Library:RegisterTheme(hotbarGradient, "Accent", "Gradient")
+
+    local HotbarViewerTitle = Instance.new("TextLabel")
+    HotbarViewerTitle.Parent = HotbarViewer
+    HotbarViewerTitle.BackgroundTransparency = 1
+    HotbarViewerTitle.Position = UDim2.new(0, 0, 0, 2)
+    HotbarViewerTitle.Size = UDim2.new(1, 0, 0, 23)
+    HotbarViewerTitle.Text = "Hotbar"
+    HotbarViewerTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    HotbarViewerTitle.TextSize = 13
+    ApplyFont(HotbarViewerTitle)
+    
+    Library:RegisterTheme(HotbarViewer, "Background", "BackgroundColor3")
+    Library:RegisterTheme(HotbarViewerTitle, "Text", "TextColor3")
+
+    local HotbarContainer = Instance.new("Frame")
+    HotbarContainer.Parent = HotbarViewer
+    HotbarContainer.BackgroundTransparency = 1
+    HotbarContainer.Position = UDim2.new(0, 0, 0, 25)
+    HotbarContainer.Size = UDim2.new(1, 0, 1, -25)
+    HotbarContainer.ZIndex = 3
+
+    local HotbarLayout = Instance.new("UIListLayout")
+    HotbarLayout.Parent = HotbarContainer
+    HotbarLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    HotbarLayout.Padding = UDim.new(0, 2)
+    
+    function Library:UpdateHotbar(items)
+        for _, v in ipairs(HotbarContainer:GetChildren()) do
+            if v:IsA("TextLabel") then v:Destroy() end
+        end
+        if items and #items > 0 then
+            for _, item in ipairs(items) do
+                local lbl = Instance.new("TextLabel")
+                lbl.Parent = HotbarContainer
+                lbl.BackgroundTransparency = 1
+                lbl.Size = UDim2.new(1, 0, 0, 18)
+                lbl.Text = "  " .. tostring(item)
+                lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+                lbl.TextSize = 12
+                lbl.TextXAlignment = Enum.TextXAlignment.Left
+                lbl.ZIndex = 3
+                lbl.Font = Enum.Font.Code
+                pcall(function() ApplyFont(lbl) end)
+            end
+            HotbarViewer.Size = UDim2.new(0, 180, 0, 25 + (#items * 20))
+        else
+            local lbl = Instance.new("TextLabel")
+            lbl.Parent = HotbarContainer
+            lbl.BackgroundTransparency = 1
+            lbl.Size = UDim2.new(1, 0, 0, 18)
+            lbl.Text = "  Empty"
+            lbl.TextColor3 = Color3.fromRGB(150, 150, 150)
+            lbl.TextSize = 12
+            lbl.TextXAlignment = Enum.TextXAlignment.Left
+            lbl.ZIndex = 3
+            lbl.Font = Enum.Font.Code
+            pcall(function() ApplyFont(lbl) end)
+            HotbarViewer.Size = UDim2.new(0, 180, 0, 45)
+        end
+    end
+
+    -- ========================
     -- CONTEXT MENU (Fatality-style keybind) - Uses backdrop approach
     -- ========================
     local Backdrop = Instance.new("TextButton")
