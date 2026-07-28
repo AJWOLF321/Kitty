@@ -456,27 +456,47 @@ function Library:CreateWindow(options)
     local HotbarLayout = Instance.new("UIListLayout")
     HotbarLayout.Parent = HotbarContainer
     HotbarLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    HotbarLayout.FillDirection = Enum.FillDirection.Horizontal
     HotbarLayout.Padding = UDim.new(0, 2)
     
-    function Library:UpdateHotbar(items)
+    function Library:UpdateHotbar(title, items)
+        HotbarViewerTitle.Text = title
         for _, v in ipairs(HotbarContainer:GetChildren()) do
-            if v:IsA("TextLabel") then v:Destroy() end
+            if v:IsA("Frame") or v:IsA("TextLabel") then v:Destroy() end
         end
         if items and #items > 0 then
             for _, item in ipairs(items) do
-                local lbl = Instance.new("TextLabel")
-                lbl.Parent = HotbarContainer
-                lbl.BackgroundTransparency = 1
-                lbl.Size = UDim2.new(1, 0, 0, 18)
-                lbl.Text = "  " .. tostring(item)
-                lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-                lbl.TextSize = 12
-                lbl.TextXAlignment = Enum.TextXAlignment.Left
-                lbl.ZIndex = 3
-                lbl.Font = Enum.Font.Code
-                pcall(function() ApplyFont(lbl) end)
+                local slot = Instance.new("Frame")
+                slot.Parent = HotbarContainer
+                slot.Size = UDim2.new(0, 45, 0, 45)
+                slot.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+                slot.BorderSizePixel = 1
+                slot.BorderColor3 = item.equipped and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(50, 50, 50)
+                
+                if item.icon and item.icon ~= "" then
+                    local icon = Instance.new("ImageLabel")
+                    icon.Parent = slot
+                    icon.BackgroundTransparency = 1
+                    icon.Size = UDim2.new(1, -4, 1, -4)
+                    icon.Position = UDim2.new(0, 2, 0, 2)
+                    icon.Image = item.icon
+                    icon.ScaleType = Enum.ScaleType.Fit
+                else
+                    local nameLbl = Instance.new("TextLabel")
+                    nameLbl.Parent = slot
+                    nameLbl.BackgroundTransparency = 1
+                    nameLbl.Size = UDim2.new(1, -4, 1, -4)
+                    nameLbl.Position = UDim2.new(0, 2, 0, 2)
+                    nameLbl.Text = item.name
+                    nameLbl.TextColor3 = Color3.fromRGB(200, 200, 200)
+                    nameLbl.TextSize = 10
+                    nameLbl.TextWrapped = true
+                    nameLbl.ZIndex = 3
+                    nameLbl.Font = Enum.Font.Code
+                end
             end
-            HotbarViewer.Size = UDim2.new(0, 180, 0, 25 + (#items * 20))
+            local width = #items * 47
+            HotbarViewer.Size = UDim2.new(0, math.max(180, width + 5), 0, 25 + 45 + 5)
         else
             local lbl = Instance.new("TextLabel")
             lbl.Parent = HotbarContainer
