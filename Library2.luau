@@ -5645,5 +5645,161 @@ task.wait(1)
 library:Notify{duration = 3, Color = fromRGB(0, 0, 0)}
 ]]--
 
+local _hotbarGui, _hotbarViewer, _hotbarTitle, _hotbarContainer
+
+function library:CreateHotbarViewer(options)
+    local title = options.Title or "Hotbar Viewer"
+    local TweenService   = game:GetService("TweenService")
+    local UserInputService = game:GetService("UserInputService")
+    local CoreGui = game:GetService("CoreGui")
+
+    _hotbarGui = Instance.new("ScreenGui")
+    _hotbarGui.Name = "GuilibHotbarViewer"
+    _hotbarGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    _hotbarGui.ResetOnSpawn = false
+    
+    local success = pcall(function() _hotbarGui.Parent = CoreGui end)
+    if not success then pcall(function() _hotbarGui.Parent = workspace.CurrentCamera end) end
+
+    -- Main Container (Guilib style: dark grey, solid outline)
+    _hotbarViewer = Instance.new("Frame")
+    _hotbarViewer.Name = "HotbarViewer"
+    _hotbarViewer.Parent = _hotbarGui
+    _hotbarViewer.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    _hotbarViewer.Position = UDim2.new(0.5, -90, 1, -120)
+    _hotbarViewer.Size = UDim2.new(0, 180, 0, 25)
+    _hotbarViewer.BorderSizePixel = 1
+    _hotbarViewer.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    _hotbarViewer.ClipsDescendants = false
+    _hotbarViewer.Visible = false
+
+    -- Top bar (Guilib style: slightly darker)
+    local topBar = Instance.new("Frame")
+    topBar.Parent = _hotbarViewer
+    topBar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    topBar.BorderSizePixel = 0
+    topBar.Size = UDim2.new(1, 0, 0, 20)
+
+    -- Top bar outline
+    local topBarOutline = Instance.new("Frame")
+    topBarOutline.Parent = topBar
+    topBarOutline.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    topBarOutline.BorderSizePixel = 0
+    topBarOutline.Position = UDim2.new(0, 0, 1, 0)
+    topBarOutline.Size = UDim2.new(1, 0, 0, 1)
+
+    -- Dragging Logic
+    local _dragging, _dragStart, _dragStartPos = false, nil, nil
+    topBar.InputBegan:Connect(function(inp)
+        if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+            _dragging = true
+            _dragStart = inp.Position
+            _dragStartPos = _hotbarViewer.Position
+            inp.Changed:Connect(function()
+                if inp.UserInputState == Enum.UserInputState.End then _dragging = false end
+            end)
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(inp)
+        if _dragging and inp.UserInputType == Enum.UserInputType.MouseMovement then
+            local d = inp.Position - _dragStart
+            _hotbarViewer.Position = UDim2.new(
+                _dragStartPos.X.Scale, _dragStartPos.X.Offset + d.X,
+                _dragStartPos.Y.Scale, _dragStartPos.Y.Offset + d.Y
+            )
+        end
+    end)
+
+    -- Title
+    _hotbarTitle = Instance.new("TextLabel")
+    _hotbarTitle.Parent = topBar
+    _hotbarTitle.BackgroundTransparency = 1
+    _hotbarTitle.Position = UDim2.new(0, 6, 0, 0)
+    _hotbarTitle.Size = UDim2.new(1, -6, 1, 0)
+    _hotbarTitle.Text = title
+    _hotbarTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    _hotbarTitle.TextSize = 13
+    _hotbarTitle.TextXAlignment = Enum.TextXAlignment.Left
+    _hotbarTitle.Font = Enum.Font.Code
+
+    -- Item Container
+    _hotbarContainer = Instance.new("Frame")
+    _hotbarContainer.Parent = _hotbarViewer
+    _hotbarContainer.BackgroundTransparency = 1
+    _hotbarContainer.Position = UDim2.new(0, 3, 0, 24)
+    _hotbarContainer.Size = UDim2.new(1, -6, 1, -27)
+    _hotbarContainer.ZIndex = 3
+    
+    local layout = Instance.new("UIListLayout")
+    layout.Parent = _hotbarContainer
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.FillDirection = Enum.FillDirection.Horizontal
+    layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+    layout.VerticalAlignment = Enum.VerticalAlignment.Center
+    layout.Padding = UDim.new(0, 3)
+end
+
+function library:ShowHotbar(visible)
+    if _hotbarViewer then
+        _hotbarViewer.Visible = visible
+    end
+end
+
+function library:UpdateHotbar(title, items)
+    if not _hotbarViewer then return end
+    _hotbarTitle.Text = title or "Hotbar Viewer"
+    
+    for _, v in ipairs(_hotbarContainer:GetChildren()) do
+        if not v:IsA("UIListLayout") then v:Destroy() end
+    end
+    
+    if items and #items > 0 then
+        for _, item in ipairs(items) do
+            local slot = Instance.new("Frame")
+            slot.Parent = _hotbarContainer
+            slot.Size = UDim2.new(0, 40, 0, 40)
+            slot.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+            slot.BorderSizePixel = 1
+            slot.BorderColor3 = item.equipped and Color3.fromRGB(150, 200, 150) or Color3.fromRGB(0, 0, 0)
+            slot.ZIndex = 3
+            
+            if item.icon and item.icon ~= "" then
+                local img = Instance.new("ImageLabel")
+                img.Parent = slot
+                img.BackgroundTransparency = 1
+                img.Size = UDim2.new(1, -4, 1, -4)
+                img.Position = UDim2.new(0, 2, 0, 2)
+                img.Image = item.icon
+                img.ScaleType = Enum.ScaleType.Fit
+                img.ZIndex = 4
+            else
+                local lbl = Instance.new("TextLabel")
+                lbl.Parent = slot
+                lbl.BackgroundTransparency = 1
+                lbl.Size = UDim2.new(1, -4, 1, -4)
+                lbl.Position = UDim2.new(0, 2, 0, 2)
+                lbl.Text = item.name or "?"
+                lbl.TextColor3 = Color3.fromRGB(200, 200, 200)
+                lbl.TextSize = 10
+                lbl.TextWrapped = true
+                lbl.ZIndex = 4
+                lbl.Font = Enum.Font.Code
+            end
+        end
+        _hotbarViewer.Size = UDim2.new(0, math.max(180, #items * 43 + 6), 0, 70)
+    else
+        local lbl = Instance.new("TextLabel")
+        lbl.Parent = _hotbarContainer
+        lbl.BackgroundTransparency = 1
+        lbl.Size = UDim2.new(1, 0, 0, 18)
+        lbl.Text = "Empty"
+        lbl.TextColor3 = Color3.fromRGB(120, 120, 120)
+        lbl.TextSize = 12
+        lbl.ZIndex = 3
+        lbl.Font = Enum.Font.Code
+        _hotbarViewer.Size = UDim2.new(0, 180, 0, 45)
+    end
+end
+
 utility.format(library, true)
 return library;
