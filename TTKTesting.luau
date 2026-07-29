@@ -164,6 +164,16 @@ CombatTab:CreateToggle({
     end
 })
 
+CombatTab:CreateToggle({
+    Name = "Rage",
+    Flag = "Rage",
+    Default = false,
+    Side = "left",
+    Callback = function(Value)
+        state.Rage = Value
+    end
+})
+
 CombatTab:CreateSlider({
     Name = "FOV Size",
     Min = 0,
@@ -496,6 +506,86 @@ table.insert(connections, RunService.RenderStepped:Connect(function()
         end
     else
         fovCircle.Visible = false
+    end
+end))
+
+-- ==========================
+-- RAGE TRIGGERBOT (Auto Shoot)
+-- ==========================
+
+local function getClosestPlayerToCursor()
+    local closestPlayer = nil
+    local shortestDistance = state.FOVSize
+    local cam = workspace.CurrentCamera
+    if not cam then return nil end
+    local screenCenter = cam.ViewportSize / 2
+    local mercFolder = workspace:FindFirstChild("MercPlayers")
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+            local targetHead = nil
+            if mercFolder then
+                local hitboxModel = mercFolder:FindFirstChild("MercHitboxes_" .. player.Name)
+                if hitboxModel then
+                    targetHead = hitboxModel:FindFirstChild("Head")
+                end
+            end
+            if not targetHead then
+                targetHead = player.Character:FindFirstChild("Head")
+            end
+
+            if targetHead then
+                local screenPos, onScreen = cam:WorldToViewportPoint(targetHead.Position)
+                if onScreen then
+                    local dist = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
+                    if dist < shortestDistance then
+                        -- Wall check
+                        if state.Wallcheck then
+                            local rayParams = RaycastParams.new()
+                            rayParams.FilterType = Enum.RaycastFilterType.Exclude
+                            local filter = {cam}
+                            if LocalPlayer.Character then table.insert(filter, LocalPlayer.Character) end
+                            if targetHead.Parent then table.insert(filter, targetHead.Parent) end
+                            rayParams.FilterDescendantsInstances = filter
+                            local result = workspace:Raycast(cam.CFrame.Position, (targetHead.Position - cam.CFrame.Position), rayParams)
+                            if result then
+                                continue
+                            end
+                        end
+                        closestPlayer = player
+                        shortestDistance = dist
+                    end
+                end
+            end
+        end
+    end
+    return closestPlayer
+end
+
+table.insert(connections, RunService.RenderStepped:Connect(function()
+    if state.Rage then
+        local target = getClosestPlayerToCursor()
+        
+        if target then
+            local targetHead = nil
+            local mercFolder = workspace:FindFirstChild("MercPlayers")
+            if mercFolder then
+                local hitboxModel = mercFolder:FindFirstChild("MercHitboxes_" .. target.Name)
+                if hitboxModel then
+                    targetHead = hitboxModel:FindFirstChild("Head")
+                end
+            end
+            if not targetHead and target.Character then
+                targetHead = target.Character:FindFirstChild("Head")
+            end
+            
+            if targetHead then
+                if GunController and type(GunController.FireWeapon) == "function" then
+                    GunController:FireWeapon()
+                end
+                return
+            end
+        end
     end
 end))
 
@@ -903,61 +993,9 @@ table.insert(connections, RunService.RenderStepped:Connect(function(dt)
     end
 end))
 
--- ==========================
--- SILENT AIM
--- ==========================
 local CurrentCamera = workspace.CurrentCamera
 local BulletController = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Client"):WaitForChild("Controllers"):WaitForChild("BulletController"))
 local originalDischarge = BulletController.Discharge
-
-local function getClosestPlayerToCursor()
-    local closestPlayer = nil
-    local shortestDistance = state.FOVSize
-    local cam = workspace.CurrentCamera
-    if not cam then return nil end
-    local screenCenter = cam.ViewportSize / 2
-    local mercFolder = workspace:FindFirstChild("MercPlayers")
-
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
-            local targetHead = nil
-            if mercFolder then
-                local hitboxModel = mercFolder:FindFirstChild("MercHitboxes_" .. player.Name)
-                if hitboxModel then
-                    targetHead = hitboxModel:FindFirstChild("Head")
-                end
-            end
-            if not targetHead then
-                targetHead = player.Character:FindFirstChild("Head")
-            end
-
-            if targetHead then
-                local screenPos, onScreen = cam:WorldToViewportPoint(targetHead.Position)
-                if onScreen then
-                    local dist = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
-                    if dist < shortestDistance then
-                        -- Wall check
-                        if state.Wallcheck then
-                            local rayParams = RaycastParams.new()
-                            rayParams.FilterType = Enum.RaycastFilterType.Exclude
-                            local filter = {cam}
-                            if LocalPlayer.Character then table.insert(filter, LocalPlayer.Character) end
-                            if targetHead.Parent then table.insert(filter, targetHead.Parent) end
-                            rayParams.FilterDescendantsInstances = filter
-                            local result = workspace:Raycast(cam.CFrame.Position, (targetHead.Position - cam.CFrame.Position), rayParams)
-                            if result then
-                                continue
-                            end
-                        end
-                        closestPlayer = player
-                        shortestDistance = dist
-                    end
-                end
-            end
-        end
-    end
-    return closestPlayer
-end
 
 BulletController.Discharge = function(self, weaponName, origin, direction, muzzleCFrame)
     local targetDirection = direction
@@ -1146,7 +1184,30 @@ table.insert(connections, RunService.RenderStepped:Connect(function()
         if not originalViewmodelOffsets[GunController.Weapon.Name] then
             originalViewmodelOffsets[GunController.Weapon.Name] = GunController.Weapon.ViewmodelOffset
         end
-        if state.CustomViewmodel then
+
+        local target = state.Rage and getClosestPlayerToCursor() or nil
+        local targetHead = nil
+        if target and target.Character then
+            local mercFolder = workspace:FindFirstChild("MercPlayers")
+            if mercFolder then
+                local hitboxModel = mercFolder:FindFirstChild("MercHitboxes_" .. target.Name)
+                if hitboxModel then
+                    targetHead = hitboxModel:FindFirstChild("Head")
+                end
+            end
+            if not targetHead then
+                targetHead = target.Character:FindFirstChild("Head")
+            end
+        end
+
+        if targetHead then
+            local cam = workspace.CurrentCamera
+            local T = targetHead.Position
+            local dir = (T - cam.CFrame.Position).Unit
+            local pos = T - dir * 5
+            local targetWorldCFrame = CFrame.lookAt(pos, T)
+            GunController.Weapon.ViewmodelOffset = cam.CFrame:ToObjectSpace(targetWorldCFrame)
+        elseif state.CustomViewmodel then
             GunController.Weapon.ViewmodelOffset = originalViewmodelOffsets[GunController.Weapon.Name] * CFrame.new(state.ViewmodelX, state.ViewmodelY, state.ViewmodelZ)
         else
             GunController.Weapon.ViewmodelOffset = originalViewmodelOffsets[GunController.Weapon.Name]
