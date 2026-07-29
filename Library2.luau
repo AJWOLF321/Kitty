@@ -3672,6 +3672,165 @@ function library:Watermark(str)
     return watermark_types
 end
 
+-- ==========================
+-- HOTBAR VIEWER
+-- ==========================
+do
+    local CoreGui = game:GetService("CoreGui")
+    local TweenService = game:GetService("TweenService")
+    local UserInputService = game:GetService("UserInputService")
+
+    -- Build the hotbar ScreenGui once
+    local hotbarGui = Instance.new("ScreenGui")
+    hotbarGui.Name = "LarpHotbarViewer"
+    hotbarGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    hotbarGui.ResetOnSpawn = false
+    pcall(function() hotbarGui.Parent = CoreGui end)
+
+    -- Draggable outer frame
+    local HotbarViewer = Instance.new("Frame")
+    HotbarViewer.Name = "HotbarViewer"
+    HotbarViewer.Parent = hotbarGui
+    HotbarViewer.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    HotbarViewer.Position = UDim2.new(0, 20, 0.5, 30)
+    HotbarViewer.Size = UDim2.new(0, 180, 0, 25)
+    HotbarViewer.BorderSizePixel = 1
+    HotbarViewer.BorderColor3 = Color3.fromRGB(40, 40, 40)
+    HotbarViewer.ClipsDescendants = true
+    HotbarViewer.Visible = false
+
+    -- Drag support
+    local dragging, dragStart, startPos = false, nil, nil
+    HotbarViewer.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = HotbarViewer.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement) then
+            local delta = input.Position - dragStart
+            HotbarViewer.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+
+    -- Gradient accent line
+    local AccentLine = Instance.new("Frame")
+    AccentLine.Size = UDim2.new(1, 0, 0, 2)
+    AccentLine.Position = UDim2.new(0, 0, 0, 0)
+    AccentLine.BorderSizePixel = 0
+    AccentLine.ClipsDescendants = true
+    AccentLine.Parent = HotbarViewer
+    local GradFrame = Instance.new("Frame")
+    GradFrame.Size = UDim2.new(2, 0, 1, 0)
+    GradFrame.BorderSizePixel = 0
+    GradFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    GradFrame.Parent = AccentLine
+    local Grad = Instance.new("UIGradient")
+    Grad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0,    Color3.fromRGB(255, 105, 180)),
+        ColorSequenceKeypoint.new(0.25, Color3.fromRGB(167, 76,  219)),
+        ColorSequenceKeypoint.new(0.5,  Color3.fromRGB(100, 150, 255)),
+        ColorSequenceKeypoint.new(0.75, Color3.fromRGB(167, 76,  219)),
+        ColorSequenceKeypoint.new(1,    Color3.fromRGB(255, 105, 180)),
+    })
+    Grad.Parent = GradFrame
+    TweenService:Create(GradFrame, TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true), {Position = UDim2.new(-1, 0, 0, 0)}):Play()
+
+    -- Title label
+    local HotbarTitle = Instance.new("TextLabel")
+    HotbarTitle.Parent = HotbarViewer
+    HotbarTitle.BackgroundTransparency = 1
+    HotbarTitle.Position = UDim2.new(0, 0, 0, 2)
+    HotbarTitle.Size = UDim2.new(1, 0, 0, 23)
+    HotbarTitle.Text = "Hotbar"
+    HotbarTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    HotbarTitle.TextSize = 13
+    HotbarTitle.Font = Enum.Font.Code
+
+    -- Item container
+    local HotbarContainer = Instance.new("Frame")
+    HotbarContainer.Parent = HotbarViewer
+    HotbarContainer.BackgroundTransparency = 1
+    HotbarContainer.Position = UDim2.new(0, 0, 0, 25)
+    HotbarContainer.Size = UDim2.new(1, 0, 1, -25)
+    HotbarContainer.ZIndex = 3
+    local HotbarLayout = Instance.new("UIListLayout")
+    HotbarLayout.Parent = HotbarContainer
+    HotbarLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    HotbarLayout.FillDirection = Enum.FillDirection.Horizontal
+    HotbarLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    HotbarLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    HotbarLayout.Padding = UDim.new(0, 2)
+
+    library._hotbarViewer = HotbarViewer
+    library._hotbarTitle  = HotbarTitle
+    library._hotbarContainer = HotbarContainer
+
+    function library:ShowHotbar(visible)
+        HotbarViewer.Visible = visible
+    end
+
+    function library:UpdateHotbar(title, items)
+        HotbarTitle.Text = title or "Hotbar"
+        for _, v in ipairs(HotbarContainer:GetChildren()) do
+            if v:IsA("Frame") or v:IsA("TextLabel") then v:Destroy() end
+        end
+
+        if items and #items > 0 then
+            for _, item in ipairs(items) do
+                local slot = Instance.new("Frame")
+                slot.Parent = HotbarContainer
+                slot.Size = UDim2.new(0, 45, 0, 45)
+                slot.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+                slot.BorderSizePixel = 1
+                slot.BorderColor3 = item.equipped and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(50, 50, 50)
+                slot.ZIndex = 3
+
+                if item.icon and item.icon ~= "" then
+                    local icon = Instance.new("ImageLabel")
+                    icon.Parent = slot
+                    icon.BackgroundTransparency = 1
+                    icon.Size = UDim2.new(1, -4, 1, -4)
+                    icon.Position = UDim2.new(0, 2, 0, 2)
+                    icon.Image = item.icon
+                    icon.ScaleType = Enum.ScaleType.Fit
+                    icon.ZIndex = 4
+                else
+                    local nameLbl = Instance.new("TextLabel")
+                    nameLbl.Parent = slot
+                    nameLbl.BackgroundTransparency = 1
+                    nameLbl.Size = UDim2.new(1, -4, 1, -4)
+                    nameLbl.Position = UDim2.new(0, 2, 0, 2)
+                    nameLbl.Text = item.name or "?"
+                    nameLbl.TextColor3 = Color3.fromRGB(200, 200, 200)
+                    nameLbl.TextSize = 10
+                    nameLbl.TextWrapped = true
+                    nameLbl.ZIndex = 4
+                    nameLbl.Font = Enum.Font.Code
+                end
+            end
+            HotbarViewer.Size = UDim2.new(0, math.max(180, #items * 47 + 5), 0, 75)
+        else
+            local lbl = Instance.new("TextLabel")
+            lbl.Parent = HotbarContainer
+            lbl.BackgroundTransparency = 1
+            lbl.Size = UDim2.new(1, 0, 0, 18)
+            lbl.Text = "  Empty"
+            lbl.TextColor3 = Color3.fromRGB(150, 150, 150)
+            lbl.TextSize = 12
+            lbl.TextXAlignment = Enum.TextXAlignment.Left
+            lbl.ZIndex = 3
+            lbl.Font = Enum.Font.Code
+            HotbarViewer.Size = UDim2.new(0, 180, 0, 45)
+        end
+    end
+end
+
 function library:List(options)
     return components.list(options)
 end
@@ -5150,7 +5309,7 @@ function library:Load(options)
     end
 
     function window_types:SettingsTab(watermark, unload)
-        unload = unload or function() library.unload(library) end
+        unload = unload or function() library:Unload() end
 
         local settings = self:Tab("Settings")
         local configs = settings:Section{name = "Configs"}
@@ -5388,10 +5547,12 @@ function library:Load(options)
             default = library.keybind_list_default,
             flag = "player_list",
             callback = function(value)
-                library.Playerlist.toggled = value
-
-                if library.open then
-                    library.Playerlist.object.Visible = value
+                if type(library.Playerlist) == "table" then
+                    library.Playerlist.toggled = value
+                    
+                    if library.open then
+                        library.Playerlist.object.Visible = value
+                    end
                 end
             end
         }
