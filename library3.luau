@@ -27,20 +27,23 @@ local function safe_cloneref(instance)
     end
     return instance
 end
-local cloneref: cloneref = safe_cloneref
+local cloneref = safe_cloneref
 local TweenService: TweenService = cloneref(game:GetService('TweenService'));
 local UserInputService: UserInputService = cloneref(game:GetService('UserInputService'));
 local TextService: TextService = cloneref(game:GetService('TextService'));
 local RunService: RunService = cloneref(game:GetService('RunService'));
 local Players: Players = cloneref(game:GetService('Players'));
 local HttpService: HttpService = cloneref(game:GetService('HttpService'));
-local LocalPlayer: Player = Players.LocalPlayer;
-local _cg = game:FindFirstChild('CoreGui')
-local _pg = LocalPlayer:FindFirstChild('PlayerGui') or LocalPlayer:WaitForChild('PlayerGui', 5)
-local CoreGui: PlayerGui = (gethui and gethui()) or (get_hidden_gui and get_hidden_gui()) or (_cg and cloneref(_cg)) or (_pg and cloneref(_pg));
-local Mouse: Mouse = LocalPlayer:GetMouse();
+
+local gethui = function() return game:GetService("CoreGui") end;
+local get_hidden_gui = function() return game:GetService("CoreGui") end;
+
+local CoreGui: PlayerGui = game:GetService("CoreGui");
+
+local ProtectGui = function(s) return s; end;
+local LocalPlayer: Player = cloneref(Players.LocalPlayer);
+local Mouse: Mouse = cloneref(LocalPlayer:GetMouse());
 local CurrentCamera: Camera = cloneref(workspace.CurrentCamera);
-local ProtectGui = protect_gui or protectgui or (syn and syn.protect_gui) or function(s) return s; end;
 local GlobalWindow = Instance.new('ScreenGui');
 local ManualTween = TweenInfo.new(0.1);
 local SlowyTween = TweenInfo.new(0.175);
@@ -880,119 +883,10 @@ NeverLose.GetCalculatePosition = function(planePos, planeNormal, rayOrigin, rayD
 end;
 
 NeverLose.CreateBlurModule = function(self , Frame , Signal)
-	if not NeverLose.EnabledBlur then
-		return NeverLose:AddSignal(Instance.new('BindableEvent').Event:Connect(function() return "nl"; end));	
-	end;
-
-	local Part = Instance.new('Part',NeverLose.BlurModuleParent);
-	local DepthOfField = Instance.new('DepthOfFieldEffect',cloneref(game:GetService('Lighting')));
-	local BlockMesh = Instance.new("BlockMesh");
-
-	BlockMesh.Parent = Part;
-
-	Part.Material = Enum.Material.Glass;
-	Part.Transparency = 1;
-	Part.Reflectance = 1;
-	Part.CastShadow = false;
-	Part.Anchored = true;
-	Part.CanCollide = false;
-	Part.CanQuery = false;
-	Part.CollisionGroup = NeverLose.RandomString();
-	Part.Size = Vector3.new(1, 1, 1) * 0.01;
-	Part.Color = Color3.fromRGB(0,0,0);
-
-	DepthOfField.Enabled = true;
-	DepthOfField.FarIntensity = 0;
-	DepthOfField.FocusDistance = 0;
-	DepthOfField.InFocusRadius = 1000;
-	DepthOfField.NearIntensity = 1;
-	DepthOfField.Name = NeverLose.RandomString();
-
-	Part.Name = NeverLose.RandomString();
-
-	local disconnect;
-
-	local UpdateFunction = function()
-		local IsWindowActive = Signal:GetValue();
-
-		if IsWindowActive and not NeverLose.Global3DRenderMode then
-
-			NeverLose.PlayAnimate(DepthOfField,TweenInfo.new(0.1),{
-				NearIntensity = 1
-			})
-
-			NeverLose.PlayAnimate(Part,TweenInfo.new(0.1),{
-				Transparency = 0.97,
-				Size = Vector3.new(1, 1, 1) * 0.01;
-			})
-
-			Part.Parent = NeverLose.BlurModuleParent;
-		else
-			NeverLose.PlayAnimate(DepthOfField,TweenInfo.new(0.1),{
-				NearIntensity = 0
-			})
-
-			NeverLose.PlayAnimate(Part,TweenInfo.new(0.1),{
-				Size = Vector3.zero,
-				Transparency = 1.5,
-			})
-
-			Part.Parent = nil;
-
-			return false;
-		end;
-
-		if IsWindowActive then
-			local corner0 = Frame.AbsolutePosition;
-			local corner1 = corner0 + Frame.AbsoluteSize;
-
-			local ray0 = CurrentCamera.ScreenPointToRay(CurrentCamera,corner0.X, corner0.Y, 1);
-			local ray1 = CurrentCamera.ScreenPointToRay(CurrentCamera,corner1.X, corner1.Y, 1);
-
-			local planeOrigin = CurrentCamera.CFrame.Position + CurrentCamera.CFrame.LookVector * (0.05 - CurrentCamera.NearPlaneZ);
-
-			local planeNormal = CurrentCamera.CFrame.LookVector;
-
-			local pos0 = NeverLose.GetCalculatePosition(planeOrigin, planeNormal, ray0.Origin, ray0.Direction);
-			local pos1 = NeverLose.GetCalculatePosition(planeOrigin, planeNormal, ray1.Origin, ray1.Direction);
-
-			pos0 = CurrentCamera.CFrame:PointToObjectSpace(pos0);
-			pos1 = CurrentCamera.CFrame:PointToObjectSpace(pos1);
-
-			local size   = pos1 - pos0;
-			local center = (pos0 + pos1) / 2;
-
-			BlockMesh.Offset = center
-			BlockMesh.Scale  = size / 0.0101;
-			Part.CFrame = CurrentCamera.CFrame;
-		end;
-	end;
-
-	local rbxsignal = NeverLose:AddSignal(CurrentCamera:GetPropertyChangedSignal('CFrame'):Connect(UpdateFunction))
-	local loopThread = NeverLose:AddSignal(UserInputService.InputChanged:Connect(function(Input)
-		if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
-			pcall(UpdateFunction);
-		end;
-	end));
-
-	local THREAD = task.spawn(function()
-		while true do task.wait(0.1)
-			pcall(UpdateFunction);
-		end;
-	end);
-
-	disconnect = function()
-		rbxsignal:Disconnect();
-		loopThread:Disconnect();
-		task.cancel(THREAD);
-		Part:Destroy();
-		DepthOfField:Destroy();
-	end;
-
-	Frame.Destroying:Connect(disconnect);
-
-	return rbxsignal;
+	-- Disable the physical part-based blur for security reasons
+	return NeverLose:AddSignal(Instance.new('BindableEvent').Event:Connect(function() return "nl"; end));
 end;
+
 
 local EmptyFunction = function() end;
 
@@ -6568,7 +6462,7 @@ local library = {}
 function library:Window(options)
     options = options or {}
     local config = {
-        Title = options.title or options.name or "Neverlose",
+        Title = options.title or options.name or "Kittylose",
         Size = UDim2.fromOffset(options.sizex or 640, options.sizey or 480)
     }
     local nl_window = NeverLose:CreateWindow(config)
