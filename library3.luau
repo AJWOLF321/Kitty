@@ -6559,6 +6559,10 @@ function NeverLose:Unload()
 end;
 
 
+
+
+
+
 local library = {}
 
 function library:Window(options)
@@ -6569,6 +6573,102 @@ function library:Window(options)
     }
     local nl_window = NeverLose:CreateWindow(config)
     
+    local function create_section_proxy(nl_section)
+        local section_proxy = {}
+        
+        function section_proxy:Label(str)
+            return nl_section:AddLabel(str or "Label", true)
+        end
+        
+        function section_proxy:Button(btn_options)
+            btn_options = btn_options or {}
+            return nl_section:AddButton({
+                Name = btn_options.name or "Button",
+                Callback = btn_options.callback or function() end
+            })
+        end
+        
+        function section_proxy:Toggle(tog_options)
+            tog_options = tog_options or {}
+            local lbl = nl_section:AddLabel(tog_options.name or "Toggle", true)
+            return lbl:AddToggle({
+                Default = tog_options.state or tog_options.default or false,
+                Flag = tog_options.flag,
+                Callback = tog_options.callback or function() end
+            })
+        end
+        
+        function section_proxy:Slider(sli_options)
+            sli_options = sli_options or {}
+            local lbl = nl_section:AddLabel(sli_options.name or "Slider", true)
+            return lbl:AddSlider({
+                Min = sli_options.min or 0,
+                Max = sli_options.max or 100,
+                Default = sli_options.default or sli_options.min or 0,
+                Decimals = sli_options.decimals or 0,
+                Suffix = sli_options.suffix or "",
+                Flag = sli_options.flag,
+                Callback = sli_options.callback or function() end
+            })
+        end
+        
+        function section_proxy:Dropdown(drop_options)
+            drop_options = drop_options or {}
+            local lbl = nl_section:AddLabel(drop_options.name or "Dropdown", true)
+            return lbl:AddDropdown({
+                Values = drop_options.content or drop_options.options or {},
+                Default = drop_options.default,
+                MultiSelect = drop_options.multiselect or false,
+                Flag = drop_options.flag,
+                Callback = drop_options.callback or function() end
+            })
+        end
+        
+        function section_proxy:Box(box_options)
+            box_options = box_options or {}
+            local lbl = nl_section:AddLabel(box_options.name or "Box", true)
+            return lbl:AddTextInput({
+                Default = box_options.default or "",
+                ClearText = box_options.clear or false,
+                Flag = box_options.flag,
+                Callback = box_options.callback or function() end
+            })
+        end
+        
+        function section_proxy:Keybind(key_options)
+            key_options = key_options or {}
+            local lbl = nl_section:AddLabel(key_options.name or "Keybind", true)
+            return lbl:AddKeybind({
+                Default = key_options.default or "None",
+                Mode = key_options.mode or "Toggle",
+                Flag = key_options.flag,
+                Callback = key_options.callback or function() end
+            })
+        end
+        
+        function section_proxy:Colorpicker(col_options)
+            col_options = col_options or {}
+            local lbl = nl_section:AddLabel(col_options.name or "Colorpicker", true)
+            return lbl:AddColorPicker({
+                Default = col_options.color or Color3.fromRGB(255, 255, 255),
+                Alpha = col_options.alpha,
+                Flag = col_options.flag,
+                Callback = col_options.callback or function() end
+            })
+        end
+        
+        function section_proxy:Separator(str)
+            return nl_section:AddLabel(str or " ", true)
+        end
+        
+        function section_proxy:UserFrame(uf_options)
+            uf_options = uf_options or {}
+            return nl_section:AddUserFrame(uf_options.name or "User", uf_options.profile, uf_options.expires or "Never")
+        end
+        
+        return section_proxy
+    end
+
     local window_proxy = {}
     
     function window_proxy:Tab(name)
@@ -6583,100 +6683,32 @@ function library:Window(options)
                 Position = sec_options.side == "right" and "right" or "left"
             })
             
-            local section_proxy = {}
-            
-            function section_proxy:Label(str)
-                return nl_section:AddLabel(str or "Label", true)
-            end
-            
-            function section_proxy:Button(btn_options)
-                btn_options = btn_options or {}
-                return nl_section:AddButton({
-                    Name = btn_options.name or "Button",
-                    Callback = btn_options.callback or function() end
-                })
-            end
-            
-            function section_proxy:Toggle(tog_options)
-                tog_options = tog_options or {}
-                local lbl = nl_section:AddLabel(tog_options.name or "Toggle", true)
-                return lbl:AddToggle({
-                    Default = tog_options.state or tog_options.default or false,
-                    Flag = tog_options.flag,
-                    Callback = tog_options.callback or function() end
-                })
-            end
-            
-            function section_proxy:Slider(sli_options)
-                sli_options = sli_options or {}
-                local lbl = nl_section:AddLabel(sli_options.name or "Slider", true)
-                return lbl:AddSlider({
-                    Min = sli_options.min or 0,
-                    Max = sli_options.max or 100,
-                    Default = sli_options.default or sli_options.min or 0,
-                    Decimals = sli_options.decimals or 0,
-                    Suffix = sli_options.suffix or "",
-                    Flag = sli_options.flag,
-                    Callback = sli_options.callback or function() end
-                })
-            end
-            
-            function section_proxy:Dropdown(drop_options)
-                drop_options = drop_options or {}
-                local lbl = nl_section:AddLabel(drop_options.name or "Dropdown", true)
-                return lbl:AddDropdown({
-                    Values = drop_options.content or drop_options.options or {},
-                    Default = drop_options.default,
-                    MultiSelect = drop_options.multiselect or false,
-                    Flag = drop_options.flag,
-                    Callback = drop_options.callback or function() end
-                })
-            end
-            
-            function section_proxy:Box(box_options)
-                box_options = box_options or {}
-                local lbl = nl_section:AddLabel(box_options.name or "Box", true)
-                return lbl:AddTextInput({
-                    Default = box_options.default or "",
-                    ClearText = box_options.clear or false,
-                    Flag = box_options.flag,
-                    Callback = box_options.callback or function() end
-                })
-            end
-            
-            function section_proxy:Keybind(key_options)
-                key_options = key_options or {}
-                local lbl = nl_section:AddLabel(key_options.name or "Keybind", true)
-                return lbl:AddKeybind({
-                    Default = key_options.default or "None",
-                    Mode = key_options.mode or "Toggle",
-                    Flag = key_options.flag,
-                    Callback = key_options.callback or function() end
-                })
-            end
-            
-            function section_proxy:Colorpicker(col_options)
-                col_options = col_options or {}
-                local lbl = nl_section:AddLabel(col_options.name or "Colorpicker", true)
-                return lbl:AddColorPicker({
-                    Default = col_options.color or Color3.fromRGB(255, 255, 255),
-                    Alpha = col_options.alpha,
-                    Flag = col_options.flag,
-                    Callback = col_options.callback or function() end
-                })
-            end
-            
-            function section_proxy:Separator(str)
-                return nl_section:AddLabel(str or " ", true)
-            end
-            
-            return section_proxy
+            return create_section_proxy(nl_section)
         end
         
         return tab_proxy
     end
     
+    function window_proxy:SettingsPanel()
+        if not nl_window.UserSettings then return nil end
+        return create_section_proxy(nl_window.UserSettings)
+    end
+    
+    function window_proxy:SetSize(sizeX, sizeY)
+        nl_window:SetSize(UDim2.fromOffset(sizeX, sizeY))
+    end
+    
+    function window_proxy:SetAccount(account_options)
+        account_options = account_options or {}
+        nl_window:SetAccount({
+            Profile = account_options.profile,
+            Username = account_options.name or account_options.username,
+            Expires = account_options.expires
+        })
+    end
+    
     function window_proxy:Init()
+        nl_window:_InitConfig()
     end
     
     return window_proxy
