@@ -6716,6 +6716,11 @@ function library:Window(options)
         
         local tab_proxy = {}
         
+        function tab_proxy:SubTab(sub_name)
+            -- NeverLose doesn't natively support SubTabs, so we merge them into the main tab
+            return tab_proxy
+        end
+        
         function tab_proxy:Section(sec_options)
             sec_options = sec_options or {}
             
@@ -6764,14 +6769,24 @@ function library:Window(options)
             
             function section_proxy:Dropdown(drop_options)
                 drop_options = drop_options or {}
-                return nl_section:AddDropdown({
+                local nl_dropdown = nl_section:AddDropdown({
                     Name = drop_options.name or "Dropdown",
-                    Options = drop_options.options or {},
-                    Default = drop_options.default or (drop_options.options and drop_options.options[1]),
-                    Multi = drop_options.multiselect or false,
+                    Values = drop_options.content or drop_options.options or {},
+                    Default = drop_options.default or (drop_options.content and drop_options.content[1]) or (drop_options.options and drop_options.options[1]),
+                    Multi = drop_options.multi or drop_options.multiselect or false,
                     Flag = drop_options.flag,
                     Callback = drop_options.callback or function() end
                 })
+                
+                local dropdown_proxy = {}
+                function dropdown_proxy:Set(v)
+                    nl_dropdown:SetValue(v)
+                end
+                function dropdown_proxy:Refresh(vals)
+                    nl_dropdown:SetValues(vals)
+                end
+                
+                return dropdown_proxy
             end
             
             function section_proxy:Box(box_options)
