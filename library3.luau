@@ -156,7 +156,16 @@ NeverLose.BuiltInBold = Font.new('rbxasset://LuaPackages/Packages/_Index/Builder
 NeverLose.GlobalSignals = {};
 NeverLose.UnloadEnabled = false;
 
-local cloneref: cloneref = cloneref or function(f) return f end;
+local _original_cloneref = cloneref
+local function safe_cloneref(instance)
+    if not instance then return nil end
+    if _original_cloneref then
+        local success, result = pcall(_original_cloneref, instance)
+        if success then return result end
+    end
+    return instance
+end
+local cloneref: cloneref = safe_cloneref
 local TweenService: TweenService = cloneref(game:GetService('TweenService'));
 local UserInputService: UserInputService = cloneref(game:GetService('UserInputService'));
 local TextService: TextService = cloneref(game:GetService('TextService'));
