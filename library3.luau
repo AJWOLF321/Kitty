@@ -6558,35 +6558,22 @@ function NeverLose:Unload()
 	end;
 end;
 
-local library = {
-    font = 1,
-    font_size = 13
-}
+
+local library = {}
 
 function library:Window(options)
     options = options or {}
-    
     local config = {
-        Name = options.title or options.name or "Window",
-        Size = UDim2.new(0, options.sizex or 640, 0, options.sizey or 480),
-        ConfigFolder = "ConfigFolder",
-        Enable3DRenderer = false
+        Title = options.title or options.name or "Neverlose",
+        Size = UDim2.fromOffset(options.sizex or 640, options.sizey or 480)
     }
-    
     local nl_window = NeverLose:CreateWindow(config)
+    
     local window_proxy = {}
     
     function window_proxy:Tab(name)
-        local nl_tab = nl_window:AddTab({
-            Name = name or "Tab"
-        })
-        
+        local nl_tab = nl_window:AddTab({ Name = name })
         local tab_proxy = {}
-        
-        function tab_proxy:SubTab(sub_name)
-            -- NeverLose doesn't natively support SubTabs, so we merge them into the main tab
-            return tab_proxy
-        end
         
         function tab_proxy:Section(sec_options)
             sec_options = sec_options or {}
@@ -6612,8 +6599,8 @@ function library:Window(options)
             
             function section_proxy:Toggle(tog_options)
                 tog_options = tog_options or {}
-                return nl_section:AddToggle({
-                    Name = tog_options.name or "Toggle",
+                local lbl = nl_section:AddLabel(tog_options.name or "Toggle", true)
+                return lbl:AddToggle({
                     Default = tog_options.state or tog_options.default or false,
                     Flag = tog_options.flag,
                     Callback = tog_options.callback or function() end
@@ -6622,13 +6609,13 @@ function library:Window(options)
             
             function section_proxy:Slider(sli_options)
                 sli_options = sli_options or {}
-                return nl_section:AddSlider({
-                    Name = sli_options.name or "Slider",
+                local lbl = nl_section:AddLabel(sli_options.name or "Slider", true)
+                return lbl:AddSlider({
                     Min = sli_options.min or 0,
                     Max = sli_options.max or 100,
                     Default = sli_options.default or sli_options.min or 0,
-                    Suffix = sli_options.suffix,
                     Decimals = sli_options.decimals or 0,
+                    Suffix = sli_options.suffix or "",
                     Flag = sli_options.flag,
                     Callback = sli_options.callback or function() end
                 })
@@ -6636,31 +6623,22 @@ function library:Window(options)
             
             function section_proxy:Dropdown(drop_options)
                 drop_options = drop_options or {}
-                local nl_dropdown = nl_section:AddDropdown({
-                    Name = drop_options.name or "Dropdown",
+                local lbl = nl_section:AddLabel(drop_options.name or "Dropdown", true)
+                return lbl:AddDropdown({
                     Values = drop_options.content or drop_options.options or {},
-                    Default = drop_options.default or (drop_options.content and drop_options.content[1]) or (drop_options.options and drop_options.options[1]),
-                    Multi = drop_options.multi or drop_options.multiselect or false,
+                    Default = drop_options.default,
+                    MultiSelect = drop_options.multiselect or false,
                     Flag = drop_options.flag,
                     Callback = drop_options.callback or function() end
                 })
-                
-                local dropdown_proxy = {}
-                function dropdown_proxy:Set(v)
-                    nl_dropdown:SetValue(v)
-                end
-                function dropdown_proxy:Refresh(vals)
-                    nl_dropdown:SetValues(vals)
-                end
-                
-                return dropdown_proxy
             end
             
             function section_proxy:Box(box_options)
                 box_options = box_options or {}
-                return nl_section:AddTextInput({
-                    Name = box_options.name or "Box",
+                local lbl = nl_section:AddLabel(box_options.name or "Box", true)
+                return lbl:AddTextInput({
                     Default = box_options.default or "",
+                    ClearText = box_options.clear or false,
                     Flag = box_options.flag,
                     Callback = box_options.callback or function() end
                 })
@@ -6668,8 +6646,8 @@ function library:Window(options)
             
             function section_proxy:Keybind(key_options)
                 key_options = key_options or {}
-                return nl_section:AddKeybind({
-                    Name = key_options.name or "Keybind",
+                local lbl = nl_section:AddLabel(key_options.name or "Keybind", true)
+                return lbl:AddKeybind({
                     Default = key_options.default or "None",
                     Mode = key_options.mode or "Toggle",
                     Flag = key_options.flag,
@@ -6679,8 +6657,8 @@ function library:Window(options)
             
             function section_proxy:Colorpicker(col_options)
                 col_options = col_options or {}
-                return nl_section:AddColorPicker({
-                    Name = col_options.name or "Colorpicker",
+                local lbl = nl_section:AddLabel(col_options.name or "Colorpicker", true)
+                return lbl:AddColorPicker({
                     Default = col_options.color or Color3.fromRGB(255, 255, 255),
                     Alpha = col_options.alpha,
                     Flag = col_options.flag,
@@ -6699,7 +6677,6 @@ function library:Window(options)
     end
     
     function window_proxy:Init()
-        -- Compatibility method
     end
     
     return window_proxy
@@ -6708,7 +6685,10 @@ end
 function library:Notify(options)
     options = options or {}
     local notification_manager = NeverLose:CreateNotification()
-    notification_manager:Notify(options.title or options.name or "Notification", options.text or options.content or "")
+    notification_manager.new({
+        Title = options.title or options.name or "Notification",
+        Content = options.text or options.content or ""
+    })
 end
 
 return library;
