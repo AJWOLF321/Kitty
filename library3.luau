@@ -35,10 +35,28 @@ local RunService: RunService = cloneref(game:GetService('RunService'));
 local Players: Players = cloneref(game:GetService('Players'));
 local HttpService: HttpService = cloneref(game:GetService('HttpService'));
 
-local gethui = function() return game:GetService("CoreGui") end;
-local get_hidden_gui = function() return game:GetService("CoreGui") end;
+local env = (getgenv and getgenv()) or getfenv(0)
+local exec_gethui = env.gethui or (type(gethui) == "function" and gethui)
+local exec_get_hidden_gui = env.get_hidden_gui or (type(get_hidden_gui) == "function" and get_hidden_gui)
 
-local CoreGui: PlayerGui = game:GetService("CoreGui");
+local CoreGui
+local success_cg, cg = pcall(function() return game:GetService("CoreGui") end)
+if success_cg and cg then
+    CoreGui = cg
+else
+    local h
+    if exec_gethui then pcall(function() h = exec_gethui() end) end
+    if not h and exec_get_hidden_gui then pcall(function() h = exec_get_hidden_gui() end) end
+    
+    if h and h.Name ~= "PlayerGui" and not h:IsDescendantOf(Players.LocalPlayer) then
+        CoreGui = h
+    else
+        CoreGui = game:GetService("CoreGui") -- Force CoreGui (will error if blocked, avoiding PlayerGui detection)
+    end
+end
+
+local gethui = function() return CoreGui end;
+local get_hidden_gui = function() return CoreGui end;
 
 local ProtectGui = function(s) return s; end;
 local LocalPlayer: Player = cloneref(Players.LocalPlayer);
