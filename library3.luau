@@ -48,7 +48,7 @@ else
     if exec_gethui then pcall(function() h = exec_gethui() end) end
     if not h and exec_get_hidden_gui then pcall(function() h = exec_get_hidden_gui() end) end
     
-    if h and h.Name ~= "PlayerGui" and not h:IsDescendantOf(Players.LocalPlayer) then
+    if h and h.ClassName ~= "PlayerGui" then
         CoreGui = h
     else
         CoreGui = game:GetService("CoreGui") -- Force CoreGui (will error if blocked, avoiding PlayerGui detection)
