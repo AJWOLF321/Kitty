@@ -67,20 +67,20 @@ Library.Flags = {}
 Library.Options = {}
 Library.OnTabChange = Instance.new("BindableEvent")
 Library.Theme = {
-    Accent = Color3.fromRGB(167, 76, 219),
-    Main = Color3.fromRGB(10, 10, 10),
-    Background = Color3.fromRGB(15, 15, 15),
-    Text = Color3.fromRGB(255, 255, 255)
+    Accent = Color3.fromRGB(0, 150, 255),
+    Main = Color3.fromRGB(10, 13, 20),
+    Background = Color3.fromRGB(6, 8, 12),
+    Text = Color3.fromRGB(240, 245, 255)
 }
 Library.ThemeObjects = {Accent = {}, Main = {}, Background = {}, Text = {}}
+
 function Library:GetColorPlus(color, mult)
     local h, s, v = Color3.toHSV(color)
-    return Color3.fromHSV(h, s, math.clamp(v + (0.02 * (mult or 1)), 0, 1))
+    return Color3.fromHSV(h, s, math.clamp(v + (0.03 * (mult or 1)), 0, 1))
 end
 
 function Library:SetTheme(themeType, color, alpha)
     alpha = alpha or 1
-    local trans = 1 - alpha
     Library.Theme[themeType] = color
     local colorPlus1 = Library:GetColorPlus(color, 1)
     local colorPlus2 = Library:GetColorPlus(color, 2)
@@ -111,12 +111,13 @@ function Library:SetTheme(themeType, color, alpha)
         end
     end
 end
+
 function Library:RegisterTheme(inst, themeType, propType)
     table.insert(Library.ThemeObjects[themeType], {Inst = inst, Type = propType})
     local color = Library.Theme[themeType]
     local h, s, v = Color3.toHSV(color)
-    local colorPlus1 = Color3.fromHSV(h, s, math.clamp(v + 0.02, 0, 1))
-    local colorPlus2 = Color3.fromHSV(h, s, math.clamp(v + 0.04, 0, 1))
+    local colorPlus1 = Color3.fromHSV(h, s, math.clamp(v + 0.03, 0, 1))
+    local colorPlus2 = Color3.fromHSV(h, s, math.clamp(v + 0.06, 0, 1))
 
     if propType == 'BackgroundColor3' then pcall(function() inst.BackgroundColor3 = color end)
     elseif propType == 'BackgroundColor3+1' then pcall(function() inst.BackgroundColor3 = colorPlus1 end)
@@ -184,11 +185,11 @@ local function CreateAnimatedGradientBar(parent)
 
     local Gradient = Instance.new("UIGradient")
     Gradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 105, 180)),
-        ColorSequenceKeypoint.new(0.25, Color3.fromRGB(167, 76, 219)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(100, 150, 255)),
-        ColorSequenceKeypoint.new(0.75, Color3.fromRGB(167, 76, 219)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 105, 180))
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 220, 255)),
+        ColorSequenceKeypoint.new(0.25, Color3.fromRGB(0, 140, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(40, 80, 255)),
+        ColorSequenceKeypoint.new(0.75, Color3.fromRGB(0, 140, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 220, 255))
     })
     Gradient.Parent = GradientFrame
 
@@ -215,9 +216,9 @@ function Library:CreateWindow(options)
     OuterFrame.Name = "OuterFrame"
     OuterFrame.Size = UDim2.new(0, 600, 0, 500)
     OuterFrame.Position = UDim2.new(0.5, -300, 0.5, -250)
-    OuterFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    OuterFrame.BackgroundColor3 = Color3.fromRGB(6, 8, 12)
     OuterFrame.BorderSizePixel = 1
-    OuterFrame.BorderColor3 = Color3.fromRGB(30, 30, 30)
+    OuterFrame.BorderColor3 = Color3.fromRGB(18, 26, 38)
     OuterFrame.Parent = ScreenGui
     AddCorner(OuterFrame, 8)
 
@@ -225,9 +226,9 @@ function Library:CreateWindow(options)
     InnerFrame.Name = "InnerFrame"
     InnerFrame.Size = UDim2.new(1, -2, 1, -2)
     InnerFrame.Position = UDim2.new(0, 1, 0, 1)
-    InnerFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    InnerFrame.BackgroundColor3 = Color3.fromRGB(10, 13, 20)
     InnerFrame.BorderSizePixel = 1
-    InnerFrame.BorderColor3 = Color3.fromRGB(35, 35, 35)
+    InnerFrame.BorderColor3 = Color3.fromRGB(22, 32, 48)
     InnerFrame.Parent = OuterFrame
     AddCorner(InnerFrame, 7)
 
@@ -235,9 +236,9 @@ function Library:CreateWindow(options)
     OuterBorder.Name = "OuterBorder"
     OuterBorder.Size = UDim2.new(1, -12, 1, -12)
     OuterBorder.Position = UDim2.new(0, 6, 0, 6)
-    OuterBorder.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    OuterBorder.BackgroundColor3 = Color3.fromRGB(6, 8, 12)
     OuterBorder.BorderSizePixel = 1
-    OuterBorder.BorderColor3 = Color3.fromRGB(30, 30, 30)
+    OuterBorder.BorderColor3 = Color3.fromRGB(18, 26, 38)
     OuterBorder.Parent = InnerFrame
     AddCorner(OuterBorder, 6)
 
@@ -245,7 +246,7 @@ function Library:CreateWindow(options)
     MainBg.Name = "MainBg"
     MainBg.Size = UDim2.new(1, -2, 1, -2)
     MainBg.Position = UDim2.new(0, 1, 0, 1)
-    MainBg.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    MainBg.BackgroundColor3 = Color3.fromRGB(10, 13, 20)
     MainBg.BorderSizePixel = 0
     MainBg.Parent = OuterBorder
     AddCorner(MainBg, 6)
@@ -269,7 +270,7 @@ function Library:CreateWindow(options)
     TitleLabel.Position = UDim2.new(0, 8, 0, 0)
     TitleLabel.Size = UDim2.new(1, -16, 1, 0)
     TitleLabel.Text = Title
-    TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TitleLabel.TextColor3 = Color3.fromRGB(240, 245, 255)
     TitleLabel.TextSize = 12
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     ApplyFont(TitleLabel)
@@ -280,13 +281,13 @@ function Library:CreateWindow(options)
     local TabBar = Instance.new("ScrollingFrame")
     TabBar.Name = "TabBar"
     TabBar.Parent = MainBg
-    TabBar.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+    TabBar.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
     TabBar.Position = UDim2.new(0, 6, 0, 26)
-    TabBar.Size = UDim2.new(0.22, -6, 1, -32)
+    TabBar.Size = UDim2.new(0.24, -6, 1, -32)
     TabBar.BorderSizePixel = 1
-    TabBar.BorderColor3 = Color3.fromRGB(30, 30, 30)
+    TabBar.BorderColor3 = Color3.fromRGB(18, 26, 38)
     TabBar.ScrollBarThickness = 2
-    TabBar.ScrollBarImageColor3 = Color3.fromRGB(167, 76, 219)
+    TabBar.ScrollBarImageColor3 = Color3.fromRGB(0, 150, 255)
     TabBar.CanvasSize = UDim2.new(0, 0, 0, 0)
     TabBar.Active = true
     AddCorner(TabBar, 5)
@@ -313,10 +314,10 @@ function Library:CreateWindow(options)
     local Container = Instance.new("Frame")
     Container.Name = "Container"
     Container.Parent = MainBg
-    Container.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    Container.BackgroundColor3 = Color3.fromRGB(10, 13, 20)
     Container.BackgroundTransparency = 1
-    Container.Position = UDim2.new(0.22, 4, 0, 26)
-    Container.Size = UDim2.new(0.78, -10, 1, -32)
+    Container.Position = UDim2.new(0.24, 4, 0, 26)
+    Container.Size = UDim2.new(0.76, -10, 1, -32)
     Container.BorderSizePixel = 0
 
     local ResizeHandle = Instance.new("TextButton")
@@ -326,7 +327,7 @@ function Library:CreateWindow(options)
     ResizeHandle.Position = UDim2.new(1, -22, 1, -22)
     ResizeHandle.Size = UDim2.new(0, 20, 0, 20)
     ResizeHandle.Text = "◢"
-    ResizeHandle.TextColor3 = Color3.fromRGB(150, 150, 150)
+    ResizeHandle.TextColor3 = Color3.fromRGB(100, 130, 170)
     ResizeHandle.TextSize = 18
     ResizeHandle.ZIndex = 100
     ApplyFont(ResizeHandle)
@@ -335,33 +336,33 @@ function Library:CreateWindow(options)
         TweenService:Create(ResizeHandle, TweenInfo.new(0.2), {TextColor3 = Library.Theme.Accent}):Play()
     end)
     ResizeHandle.MouseLeave:Connect(function()
-        TweenService:Create(ResizeHandle, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(150, 150, 150)}):Play()
+        TweenService:Create(ResizeHandle, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(100, 130, 170)}):Play()
     end)
     
-    local draggingResize = false
-    local dragStartPos = nil
-    local startSize = nil
-
-    ResizeHandle.MouseButton1Down:Connect(function()
-        draggingResize = true
-        dragStartPos = UserInputService:GetMouseLocation()
-        startSize = OuterFrame.AbsoluteSize
+    local DraggingResize, ResizeInput, ResizeStart, StartSize = false, nil, nil, nil
+    local function UpdateResize(input)
+        local Delta = input.Position - ResizeStart
+        local newWidth = math.max(500, StartSize.X + Delta.X)
+        local newHeight = math.max(400, StartSize.Y + Delta.Y)
+        OuterFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
+    end
+    ResizeHandle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            DraggingResize = true
+            ResizeStart = input.Position
+            StartSize = OuterFrame.AbsoluteSize
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then DraggingResize = false end
+            end)
+        end
     end)
-
+    ResizeHandle.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            ResizeInput = input
+        end
+    end)
     UserInputService.InputChanged:Connect(function(input)
-        if draggingResize and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local mp = UserInputService:GetMouseLocation()
-            local delta = mp - dragStartPos
-            local newWidth = math.max(600, startSize.X + delta.X)
-            local newHeight = math.max(500, startSize.Y + delta.Y)
-            OuterFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
-        end
-    end)
-
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            draggingResize = false
-        end
+        if input == ResizeInput and DraggingResize then UpdateResize(input) end
     end)
 
     Library.ToggleKey = Enum.KeyCode.Insert
@@ -376,11 +377,11 @@ function Library:CreateWindow(options)
     local KeybindList = Instance.new("Frame")
     KeybindList.Name = "KeybindList"
     KeybindList.Parent = ScreenGui
-    KeybindList.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    KeybindList.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
     KeybindList.Position = UDim2.new(0, 20, 0.5, 0)
     KeybindList.Size = UDim2.new(0, 180, 0, 25)
     KeybindList.BorderSizePixel = 1
-    KeybindList.BorderColor3 = Color3.fromRGB(40, 40, 40)
+    KeybindList.BorderColor3 = Color3.fromRGB(22, 32, 48)
     KeybindList.ClipsDescendants = true
     KeybindList.Visible = false
     MakeDraggable(KeybindList, KeybindList)
@@ -396,7 +397,7 @@ function Library:CreateWindow(options)
     KeybindListTitle.Position = UDim2.new(0, 0, 0, 2)
     KeybindListTitle.Size = UDim2.new(1, 0, 0, 23)
     KeybindListTitle.Text = "Keybinds"
-    KeybindListTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    KeybindListTitle.TextColor3 = Color3.fromRGB(240, 245, 255)
     KeybindListTitle.TextSize = 13
     ApplyFont(KeybindListTitle)
     
@@ -428,11 +429,11 @@ function Library:CreateWindow(options)
     local ContextMenu = Instance.new("Frame")
     ContextMenu.Name = "ContextMenu"
     ContextMenu.Parent = Backdrop
-    ContextMenu.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    ContextMenu.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
     ContextMenu.Size = UDim2.new(0, 200, 0, 55)
     ContextMenu.Position = UDim2.new(0, 0, 0, 0)
     ContextMenu.BorderSizePixel = 1
-    ContextMenu.BorderColor3 = Color3.fromRGB(40, 40, 40)
+    ContextMenu.BorderColor3 = Color3.fromRGB(28, 40, 60)
     ContextMenu.ZIndex = 100
     AddCorner(ContextMenu, 5)
 
@@ -455,11 +456,11 @@ function Library:CreateWindow(options)
 
         local TitleRow = Instance.new("TextLabel")
         TitleRow.Parent = ContextMenu
-        TitleRow.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        TitleRow.BackgroundColor3 = Color3.fromRGB(12, 16, 24)
         TitleRow.Size = UDim2.new(1, 0, 0, 20)
         TitleRow.Position = UDim2.new(0, 0, 0, 0)
         TitleRow.Text = "  " .. elementData.Name
-        TitleRow.TextColor3 = Color3.fromRGB(167, 76, 219)
+        TitleRow.TextColor3 = Color3.fromRGB(0, 170, 255)
         TitleRow.TextSize = 12
         TitleRow.TextXAlignment = Enum.TextXAlignment.Left
         TitleRow.BorderSizePixel = 0
@@ -469,7 +470,7 @@ function Library:CreateWindow(options)
 
         local BindRow = Instance.new("Frame")
         BindRow.Parent = ContextMenu
-        BindRow.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+        BindRow.BackgroundColor3 = Color3.fromRGB(10, 13, 20)
         BindRow.Size = UDim2.new(1, 0, 0, 30)
         BindRow.Position = UDim2.new(0, 0, 0, 22)
         BindRow.BorderSizePixel = 0
@@ -480,14 +481,14 @@ function Library:CreateWindow(options)
 
         local PlusBtn = Instance.new("TextButton")
         PlusBtn.Parent = BindRow
-        PlusBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+        PlusBtn.BackgroundColor3 = Color3.fromRGB(16, 22, 32)
         PlusBtn.Size = UDim2.new(0, 25, 0, 22)
         PlusBtn.Position = UDim2.new(0, 5, 0, 4)
         PlusBtn.Text = existingBind and "-" or "+"
-        PlusBtn.TextColor3 = Color3.fromRGB(167, 76, 219)
+        PlusBtn.TextColor3 = Color3.fromRGB(0, 170, 255)
         PlusBtn.TextSize = 16
         PlusBtn.BorderSizePixel = 1
-        PlusBtn.BorderColor3 = Color3.fromRGB(40, 40, 40)
+        PlusBtn.BorderColor3 = Color3.fromRGB(28, 40, 60)
         PlusBtn.ZIndex = 102
         PlusBtn.AutoButtonColor = false
         ApplyFont(PlusBtn)
@@ -495,14 +496,14 @@ function Library:CreateWindow(options)
 
         local KeyBox = Instance.new("TextButton")
         KeyBox.Parent = BindRow
-        KeyBox.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+        KeyBox.BackgroundColor3 = Color3.fromRGB(16, 22, 32)
         KeyBox.Size = UDim2.new(0, 60, 0, 22)
         KeyBox.Position = UDim2.new(0, 35, 0, 4)
         KeyBox.Text = existingBind and existingBind.Key.Name or "..."
-        KeyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+        KeyBox.TextColor3 = Color3.fromRGB(240, 245, 255)
         KeyBox.TextSize = 12
         KeyBox.BorderSizePixel = 1
-        KeyBox.BorderColor3 = Color3.fromRGB(40, 40, 40)
+        KeyBox.BorderColor3 = Color3.fromRGB(28, 40, 60)
         KeyBox.ZIndex = 102
         KeyBox.AutoButtonColor = false
         KeyBox.Visible = existingBind ~= nil
@@ -511,14 +512,14 @@ function Library:CreateWindow(options)
 
         local ModeBtn = Instance.new("TextButton")
         ModeBtn.Parent = BindRow
-        ModeBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+        ModeBtn.BackgroundColor3 = Color3.fromRGB(16, 22, 32)
         ModeBtn.Size = UDim2.new(0, 90, 0, 22)
         ModeBtn.Position = UDim2.new(0, 100, 0, 4)
         ModeBtn.Text = existingBind and existingBind.Mode or "Toggle"
-        ModeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+        ModeBtn.TextColor3 = Color3.fromRGB(240, 245, 255)
         ModeBtn.TextSize = 12
         ModeBtn.BorderSizePixel = 1
-        ModeBtn.BorderColor3 = Color3.fromRGB(40, 40, 40)
+        ModeBtn.BorderColor3 = Color3.fromRGB(28, 40, 60)
         ModeBtn.ZIndex = 102
         ModeBtn.AutoButtonColor = false
         ModeBtn.Visible = existingBind ~= nil
@@ -546,7 +547,7 @@ function Library:CreateWindow(options)
                 ModeBtn.Visible = true
                 PlusBtn.Text = "-"
                 KeyBox.Text = "..."
-                KeyBox.TextColor3 = Color3.fromRGB(167, 76, 219)
+                KeyBox.TextColor3 = Color3.fromRGB(0, 170, 255)
 
                 local conn
                 conn = UserInputService.InputBegan:Connect(function(input)
@@ -554,13 +555,13 @@ function Library:CreateWindow(options)
                         if input.KeyCode == Enum.KeyCode.Escape then
                             conn:Disconnect()
                             KeyBox.Text = "..."
-                            KeyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+                            KeyBox.TextColor3 = Color3.fromRGB(240, 245, 255)
                             return
                         end
                         conn:Disconnect()
                         selectedKey = input.KeyCode
                         KeyBox.Text = input.KeyCode.Name
-                        KeyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        KeyBox.TextColor3 = Color3.fromRGB(240, 245, 255)
                         SaveKeybind()
                     end
                 end)
@@ -569,7 +570,7 @@ function Library:CreateWindow(options)
 
         KeyBox.MouseButton1Click:Connect(function()
             KeyBox.Text = "..."
-            KeyBox.TextColor3 = Color3.fromRGB(167, 76, 219)
+            KeyBox.TextColor3 = Color3.fromRGB(0, 170, 255)
 
             local conn
             conn = UserInputService.InputBegan:Connect(function(input)
@@ -577,13 +578,13 @@ function Library:CreateWindow(options)
                     if input.KeyCode == Enum.KeyCode.Escape then
                         conn:Disconnect()
                         KeyBox.Text = selectedKey and selectedKey.Name or "..."
-                        KeyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+                        KeyBox.TextColor3 = Color3.fromRGB(240, 245, 255)
                         return
                     end
                     conn:Disconnect()
                     selectedKey = input.KeyCode
                     KeyBox.Text = input.KeyCode.Name
-                    KeyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    KeyBox.TextColor3 = Color3.fromRGB(240, 245, 255)
                     SaveKeybind()
                 end
             end)
@@ -594,11 +595,11 @@ function Library:CreateWindow(options)
 
         local ModeItemsFrame = Instance.new("Frame")
         ModeItemsFrame.Parent = ContextMenu
-        ModeItemsFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        ModeItemsFrame.BackgroundColor3 = Color3.fromRGB(12, 16, 24)
         ModeItemsFrame.Size = UDim2.new(0, 90, 0, #modes * 20)
         ModeItemsFrame.Position = UDim2.new(0, 100, 0, 52)
         ModeItemsFrame.BorderSizePixel = 1
-        ModeItemsFrame.BorderColor3 = Color3.fromRGB(40, 40, 40)
+        ModeItemsFrame.BorderColor3 = Color3.fromRGB(28, 40, 60)
         ModeItemsFrame.ZIndex = 110
         ModeItemsFrame.Visible = false
         AddCorner(ModeItemsFrame, 3)
@@ -610,10 +611,10 @@ function Library:CreateWindow(options)
         for _, m in ipairs(modes) do
             local mItem = Instance.new("TextButton")
             mItem.Parent = ModeItemsFrame
-            mItem.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+            mItem.BackgroundColor3 = Color3.fromRGB(16, 22, 32)
             mItem.Size = UDim2.new(1, 0, 0, 20)
             mItem.Text = m
-            mItem.TextColor3 = Color3.fromRGB(255, 255, 255)
+            mItem.TextColor3 = Color3.fromRGB(240, 245, 255)
             mItem.TextSize = 12
             mItem.BorderSizePixel = 0
             mItem.ZIndex = 111
@@ -623,10 +624,10 @@ function Library:CreateWindow(options)
             AddCorner(mItem, 2)
 
             mItem.MouseEnter:Connect(function()
-                mItem.TextColor3 = Color3.fromRGB(167, 76, 219)
+                mItem.TextColor3 = Color3.fromRGB(0, 170, 255)
             end)
             mItem.MouseLeave:Connect(function()
-                mItem.TextColor3 = Color3.fromRGB(255, 255, 255)
+                mItem.TextColor3 = Color3.fromRGB(240, 245, 255)
             end)
 
             mItem.MouseButton1Click:Connect(function()
@@ -702,7 +703,7 @@ function Library:CreateWindow(options)
                 lbl.BackgroundTransparency = 1
                 lbl.Size = UDim2.new(1, 0, 0, 18)
                 lbl.Text = "  " .. tostring(bind.Data.Name) .. " [" .. tostring(bind.Key.Name) .. "]"
-                lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+                lbl.TextColor3 = Color3.fromRGB(240, 245, 255)
                 lbl.TextSize = 12
                 lbl.TextXAlignment = Enum.TextXAlignment.Left
                 lbl.ZIndex = 3
@@ -745,16 +746,16 @@ function Library:CreateWindow(options)
         local TabBtn = Instance.new("TextButton")
         TabBtn.Name = name.."_Btn"
         TabBtn.Parent = TabBar
-        TabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        TabBtn.BackgroundColor3 = Color3.fromRGB(14, 18, 26)
         TabBtn.BackgroundTransparency = 0
-        TabBtn.Size = UDim2.new(1, 0, 0, 28)
+        TabBtn.Size = UDim2.new(1, 0, 0, 30)
         TabBtn.Text = "  " .. name
-        TabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+        TabBtn.TextColor3 = Color3.fromRGB(140, 160, 190)
         TabBtn.TextSize = 12
         TabBtn.TextXAlignment = Enum.TextXAlignment.Left
         TabBtn.TextTruncate = Enum.TextTruncate.AtEnd
         TabBtn.BorderSizePixel = 1
-        TabBtn.BorderColor3 = Color3.fromRGB(35, 35, 35)
+        TabBtn.BorderColor3 = Color3.fromRGB(24, 34, 50)
         TabBtn.AutoButtonColor = false
         ApplyFont(TabBtn)
         AddCorner(TabBtn, 4)
@@ -780,13 +781,13 @@ function Library:CreateWindow(options)
         local LeftColumn = Instance.new("ScrollingFrame")
         LeftColumn.Name = "LeftColumn"
         LeftColumn.Parent = TabPage
-        LeftColumn.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+        LeftColumn.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
         LeftColumn.Position = UDim2.new(0, 0, 0, 0)
         LeftColumn.Size = UDim2.new(0.5, -3, 1, 0)
         LeftColumn.BorderSizePixel = 1
-        LeftColumn.BorderColor3 = Color3.fromRGB(30, 30, 30)
+        LeftColumn.BorderColor3 = Color3.fromRGB(18, 26, 38)
         LeftColumn.ScrollBarThickness = 2
-        LeftColumn.ScrollBarImageColor3 = Color3.fromRGB(167, 76, 219)
+        LeftColumn.ScrollBarImageColor3 = Color3.fromRGB(0, 150, 255)
         LeftColumn.CanvasSize = UDim2.new(0, 0, 0, 0)
         LeftColumn.Active = true
         AddCorner(LeftColumn, 5)
@@ -810,13 +811,13 @@ function Library:CreateWindow(options)
         local RightColumn = Instance.new("ScrollingFrame")
         RightColumn.Name = "RightColumn"
         RightColumn.Parent = TabPage
-        RightColumn.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+        RightColumn.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
         RightColumn.Position = UDim2.new(0.5, 3, 0, 0)
         RightColumn.Size = UDim2.new(0.5, -3, 1, 0)
         RightColumn.BorderSizePixel = 1
-        RightColumn.BorderColor3 = Color3.fromRGB(30, 30, 30)
+        RightColumn.BorderColor3 = Color3.fromRGB(18, 26, 38)
         RightColumn.ScrollBarThickness = 2
-        RightColumn.ScrollBarImageColor3 = Color3.fromRGB(167, 76, 219)
+        RightColumn.ScrollBarImageColor3 = Color3.fromRGB(0, 150, 255)
         RightColumn.CanvasSize = UDim2.new(0, 0, 0, 0)
         RightColumn.Active = true
         AddCorner(RightColumn, 5)
@@ -840,11 +841,11 @@ function Library:CreateWindow(options)
         local SubTabBar = Instance.new("Frame")
         SubTabBar.Name = "SubTabBar"
         SubTabBar.Parent = TabPage
-        SubTabBar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+        SubTabBar.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
         SubTabBar.Position = UDim2.new(0, 0, 0, 0)
         SubTabBar.Size = UDim2.new(1, 0, 0, 0)
         SubTabBar.BorderSizePixel = 1
-        SubTabBar.BorderColor3 = Color3.fromRGB(30, 30, 30)
+        SubTabBar.BorderColor3 = Color3.fromRGB(18, 26, 38)
         SubTabBar.Visible = false
         AddCorner(SubTabBar, 4)
 
@@ -859,8 +860,8 @@ function Library:CreateWindow(options)
         Library.OnTabChange.Event:Connect(function()
             if WindowObj.CurrentTab ~= name then
                 TabPage.Visible = false
-                TabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-                TabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
+                TabBtn.BackgroundColor3 = Color3.fromRGB(14, 18, 26)
+                TabBtn.TextColor3 = Color3.fromRGB(140, 160, 190)
                 TabAccent.Visible = false
             end
         end)
@@ -869,7 +870,7 @@ function Library:CreateWindow(options)
             WindowObj.CurrentTab = name
             Library.OnTabChange:Fire()
             TabPage.Visible = true
-            TabBtn.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+            TabBtn.BackgroundColor3 = Color3.fromRGB(20, 30, 46)
             TabBtn.TextColor3 = Library.Theme.Accent
             TabAccent.Visible = true
         end)
@@ -877,7 +878,7 @@ function Library:CreateWindow(options)
         if #WindowObj.Tabs == 1 then
             WindowObj.CurrentTab = name
             TabPage.Visible = true
-            TabBtn.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
+            TabBtn.BackgroundColor3 = Color3.fromRGB(20, 30, 46)
             TabBtn.TextColor3 = Library.Theme.Accent
             TabAccent.Visible = true
         end
@@ -912,14 +913,14 @@ function Library:CreateWindow(options)
 
             local subTabBtn = Instance.new("TextButton")
             subTabBtn.Parent = SubTabBar
-            subTabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+            subTabBtn.BackgroundColor3 = Color3.fromRGB(14, 18, 26)
             subTabBtn.BackgroundTransparency = 0
             subTabBtn.Size = UDim2.new(0, 80, 1, 0)
             subTabBtn.Text = name
-            subTabBtn.TextColor3 = Color3.fromRGB(120, 120, 120)
+            subTabBtn.TextColor3 = Color3.fromRGB(120, 140, 170)
             subTabBtn.TextSize = 12
             subTabBtn.BorderSizePixel = 1
-            subTabBtn.BorderColor3 = Color3.fromRGB(35, 35, 35)
+            subTabBtn.BorderColor3 = Color3.fromRGB(24, 34, 50)
             subTabBtn.AutoButtonColor = false
             ApplyFont(subTabBtn)
             AddCorner(subTabBtn, 3)
@@ -938,8 +939,8 @@ function Library:CreateWindow(options)
                 currentSubTab = targetName
                 for _, st in ipairs(subTabs) do
                     local isTarget = (st.Name == targetName)
-                    st.Btn.TextColor3 = isTarget and Library.Theme.Accent or Color3.fromRGB(120, 120, 120)
-                    st.Btn.BackgroundColor3 = isTarget and Color3.fromRGB(25, 25, 25) or Color3.fromRGB(20, 20, 20)
+                    st.Btn.TextColor3 = isTarget and Library.Theme.Accent or Color3.fromRGB(120, 140, 170)
+                    st.Btn.BackgroundColor3 = isTarget and Color3.fromRGB(20, 30, 46) or Color3.fromRGB(14, 18, 26)
                     for _, elem in ipairs(st.Elements) do
                         elem.Visible = isTarget
                     end
@@ -995,15 +996,15 @@ function Library:CreateWindow(options)
             
             local GroupboxOuter = Instance.new("Frame")
             GroupboxOuter.Parent = column
-            GroupboxOuter.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+            GroupboxOuter.BackgroundColor3 = Color3.fromRGB(6, 8, 12)
             GroupboxOuter.BorderSizePixel = 1
-            GroupboxOuter.BorderColor3 = Color3.fromRGB(35, 35, 35)
+            GroupboxOuter.BorderColor3 = Color3.fromRGB(20, 30, 45)
             GroupboxOuter.Size = UDim2.new(1, -8, 0, 20)
             AddCorner(GroupboxOuter, 5)
             
             local GroupboxInner = Instance.new("Frame")
             GroupboxInner.Parent = GroupboxOuter
-            GroupboxInner.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+            GroupboxInner.BackgroundColor3 = Color3.fromRGB(12, 16, 24)
             GroupboxInner.BorderSizePixel = 0
             GroupboxInner.Size = UDim2.new(1, -2, 1, -2)
             GroupboxInner.Position = UDim2.new(0, 1, 0, 1)
@@ -1022,7 +1023,7 @@ function Library:CreateWindow(options)
             TitleLabel.Size = UDim2.new(1, -10, 0, 16)
             TitleLabel.Position = UDim2.new(0, 6, 0, 4)
             TitleLabel.Text = name
-            TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            TitleLabel.TextColor3 = Color3.fromRGB(240, 245, 255)
             TitleLabel.TextSize = 12
             TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
             ApplyFont(TitleLabel)
@@ -1064,13 +1065,13 @@ function Library:CreateWindow(options)
 
             local Btn = Instance.new("TextButton")
             Btn.Parent = parent
-            Btn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-            Btn.Size = UDim2.new(1, 0, 0, 20)
+            Btn.BackgroundColor3 = Color3.fromRGB(16, 22, 32)
+            Btn.Size = UDim2.new(1, 0, 0, 22)
             Btn.Text = btnName
-            Btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+            Btn.TextColor3 = Color3.fromRGB(200, 215, 235)
             Btn.TextSize = 12
             Btn.BorderSizePixel = 1
-            Btn.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            Btn.BorderColor3 = Color3.fromRGB(28, 40, 60)
             Btn.AutoButtonColor = false
             ApplyFont(Btn)
             AddCorner(Btn, 4)
@@ -1081,7 +1082,7 @@ function Library:CreateWindow(options)
                 Btn.BorderColor3 = Library.Theme.Accent 
             end)
             Btn.MouseLeave:Connect(function() 
-                Btn.BorderColor3 = Color3.fromRGB(40, 40, 40) 
+                Btn.BorderColor3 = Color3.fromRGB(28, 40, 60) 
             end)
             Btn.MouseButton1Click:Connect(callback)
             TrackElement(Btn)
@@ -1102,13 +1103,13 @@ function Library:CreateWindow(options)
 
             local BtnBox = Instance.new("TextBox")
             BtnBox.Parent = parent
-            BtnBox.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-            BtnBox.Size = UDim2.new(1, 0, 0, 20)
+            BtnBox.BackgroundColor3 = Color3.fromRGB(16, 22, 32)
+            BtnBox.Size = UDim2.new(1, 0, 0, 22)
             BtnBox.Text = btnName
-            BtnBox.TextColor3 = Color3.fromRGB(200, 200, 200)
+            BtnBox.TextColor3 = Color3.fromRGB(200, 215, 235)
             BtnBox.TextSize = 12
             BtnBox.BorderSizePixel = 1
-            BtnBox.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            BtnBox.BorderColor3 = Color3.fromRGB(28, 40, 60)
             BtnBox.ClearTextOnFocus = true
             ApplyFont(BtnBox)
             AddCorner(BtnBox, 4)
@@ -1119,7 +1120,7 @@ function Library:CreateWindow(options)
                 BtnBox.BorderColor3 = Library.Theme.Accent 
             end)
             BtnBox.MouseLeave:Connect(function() 
-                BtnBox.BorderColor3 = Color3.fromRGB(40, 40, 40) 
+                BtnBox.BorderColor3 = Color3.fromRGB(28, 40, 60) 
             end)
             
             BtnBox.FocusLost:Connect(function(enterPressed)
@@ -1153,13 +1154,13 @@ function Library:CreateWindow(options)
 
             local TBox = Instance.new("TextBox")
             TBox.Size = UDim2.new(1, 0, 0, 25)
-            TBox.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+            TBox.BackgroundColor3 = Color3.fromRGB(16, 22, 32)
             TBox.Text = default ~= "" and default or tName
             TBox.PlaceholderText = tName
-            TBox.TextColor3 = Color3.fromRGB(200, 200, 200)
+            TBox.TextColor3 = Color3.fromRGB(200, 215, 235)
             TBox.TextSize = 12
             TBox.BorderSizePixel = 1
-            TBox.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            TBox.BorderColor3 = Color3.fromRGB(28, 40, 60)
             TBox.ClearTextOnFocus = clearOnFocus
             TBox.Parent = parent
             ApplyFont(TBox)
@@ -1171,7 +1172,7 @@ function Library:CreateWindow(options)
                 TBox.BorderColor3 = Library.Theme.Accent 
             end)
             TBox.MouseLeave:Connect(function() 
-                TBox.BorderColor3 = Color3.fromRGB(40, 40, 40) 
+                TBox.BorderColor3 = Color3.fromRGB(28, 40, 60) 
             end)
 
             TBox.FocusLost:Connect(function(enterPressed)
@@ -1224,11 +1225,11 @@ function Library:CreateWindow(options)
             
             local CheckBox = Instance.new("Frame")
             CheckBox.Parent = ToggleContainer
-            CheckBox.BackgroundColor3 = state and Color3.fromRGB(167, 76, 219) or Color3.fromRGB(30, 30, 30)
+            CheckBox.BackgroundColor3 = state and Library.Theme.Accent or Color3.fromRGB(18, 24, 36)
             CheckBox.Position = UDim2.new(0, 2, 0.5, -7)
             CheckBox.Size = UDim2.new(0, 14, 0, 14)
             CheckBox.BorderSizePixel = 1
-            CheckBox.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            CheckBox.BorderColor3 = Color3.fromRGB(28, 40, 60)
             AddCorner(CheckBox, 3)
 
             local TTitle = Instance.new("TextLabel")
@@ -1237,7 +1238,7 @@ function Library:CreateWindow(options)
             TTitle.Position = UDim2.new(0, 24, 0, 0)
             TTitle.Size = UDim2.new(1, -24, 1, 0)
             TTitle.Text = tName
-            TTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+            TTitle.TextColor3 = Color3.fromRGB(200, 215, 235)
             TTitle.TextSize = 12
             TTitle.TextXAlignment = Enum.TextXAlignment.Left
             TTitle.TextTruncate = Enum.TextTruncate.AtEnd
@@ -1252,7 +1253,7 @@ function Library:CreateWindow(options)
             local function SetState(newState)
                 state = newState
                 if flag then Library.Flags[flag] = state end
-                TweenService:Create(CheckBox, TweenInfo.new(0.15, Enum.EasingStyle.Sine), {BackgroundColor3 = state and Library.Theme.Accent or Color3.fromRGB(30, 30, 30)}):Play()
+                TweenService:Create(CheckBox, TweenInfo.new(0.15, Enum.EasingStyle.Sine), {BackgroundColor3 = state and Library.Theme.Accent or Color3.fromRGB(18, 24, 36)}):Play()
                 callback(state)
             end
 
@@ -1328,23 +1329,23 @@ function Library:CreateWindow(options)
             STitle.BackgroundTransparency = 1
             STitle.Size = UDim2.new(1, 0, 0, 14)
             STitle.Text = sName
-            STitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+            STitle.TextColor3 = Color3.fromRGB(200, 215, 235)
             STitle.TextSize = 12
             STitle.TextXAlignment = Enum.TextXAlignment.Left
             ApplyFont(STitle)
 
             local TrackOuter = Instance.new("Frame")
             TrackOuter.Parent = SliderContainer
-            TrackOuter.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+            TrackOuter.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
             TrackOuter.Position = UDim2.new(0, 0, 0, 18)
             TrackOuter.Size = UDim2.new(1, 0, 0, 14)
             TrackOuter.BorderSizePixel = 1
-            TrackOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            TrackOuter.BorderColor3 = Color3.fromRGB(28, 40, 60)
             AddCorner(TrackOuter, 3)
 
             local TrackInner = Instance.new("Frame")
             TrackInner.Parent = TrackOuter
-            TrackInner.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+            TrackInner.BackgroundColor3 = Color3.fromRGB(16, 22, 32)
             TrackInner.Size = UDim2.new(1, -2, 1, -2)
             TrackInner.Position = UDim2.new(0, 1, 0, 1)
             TrackInner.BorderSizePixel = 0
@@ -1352,7 +1353,7 @@ function Library:CreateWindow(options)
 
             local Fill = Instance.new("Frame")
             Fill.Parent = TrackInner
-            Fill.BackgroundColor3 = Color3.fromRGB(167, 76, 219)
+            Fill.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
             Fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
             Fill.BorderSizePixel = 0
             AddCorner(Fill, 3)
@@ -1362,7 +1363,7 @@ function Library:CreateWindow(options)
             ValueLabel.BackgroundTransparency = 1
             ValueLabel.Size = UDim2.new(1, 0, 1, 0)
             ValueLabel.Text = tostring(default) .. "/" .. tostring(max)
-            ValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            ValueLabel.TextColor3 = Color3.fromRGB(240, 245, 255)
             ValueLabel.TextSize = 11
             ValueLabel.TextStrokeTransparency = 0
             ValueLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
@@ -1467,24 +1468,24 @@ function Library:CreateWindow(options)
             DTitle.BackgroundTransparency = 1
             DTitle.Size = UDim2.new(1, 0, 0, 14)
             DTitle.Text = dName
-            DTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+            DTitle.TextColor3 = Color3.fromRGB(200, 215, 235)
             DTitle.TextSize = 12
             DTitle.TextXAlignment = Enum.TextXAlignment.Left
             ApplyFont(DTitle)
 
             local DropdownOuter = Instance.new("Frame")
             DropdownOuter.Parent = DropdownContainer
-            DropdownOuter.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+            DropdownOuter.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
             DropdownOuter.Position = UDim2.new(0, 0, 0, 18)
             DropdownOuter.Size = UDim2.new(1, 0, 0, 20)
             DropdownOuter.BorderSizePixel = 1
-            DropdownOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            DropdownOuter.BorderColor3 = Color3.fromRGB(28, 40, 60)
             DropdownOuter.ZIndex = 5
             AddCorner(DropdownOuter, 4)
 
             local DropdownInner = Instance.new("Frame")
             DropdownInner.Parent = DropdownOuter
-            DropdownInner.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+            DropdownInner.BackgroundColor3 = Color3.fromRGB(16, 22, 32)
             DropdownInner.Size = UDim2.new(1, -2, 1, -2)
             DropdownInner.Position = UDim2.new(0, 1, 0, 1)
             DropdownInner.BorderSizePixel = 0
@@ -1504,7 +1505,7 @@ function Library:CreateWindow(options)
             SelectedText.Position = UDim2.new(0, 5, 0, 0)
             SelectedText.Size = UDim2.new(1, -25, 1, 0)
             SelectedText.Text = "None"
-            SelectedText.TextColor3 = Color3.fromRGB(200, 200, 200)
+            SelectedText.TextColor3 = Color3.fromRGB(200, 215, 235)
             SelectedText.TextSize = 12
             SelectedText.TextXAlignment = Enum.TextXAlignment.Left
             SelectedText.ZIndex = 6
@@ -1516,18 +1517,18 @@ function Library:CreateWindow(options)
             Icon.Position = UDim2.new(1, -15, 0, 0)
             Icon.Size = UDim2.new(0, 15, 1, 0)
             Icon.Text = "+"
-            Icon.TextColor3 = Color3.fromRGB(200, 200, 200)
+            Icon.TextColor3 = Color3.fromRGB(200, 215, 235)
             Icon.TextSize = 12
             Icon.ZIndex = 6
             ApplyFont(Icon)
 
             local ItemContainerOuter = Instance.new("Frame")
             ItemContainerOuter.Parent = DropdownContainer
-            ItemContainerOuter.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+            ItemContainerOuter.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
             ItemContainerOuter.Position = UDim2.new(0, 0, 0, 39)
             ItemContainerOuter.Size = UDim2.new(1, 0, 0, 0)
             ItemContainerOuter.BorderSizePixel = 1
-            ItemContainerOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            ItemContainerOuter.BorderColor3 = Color3.fromRGB(28, 40, 60)
             ItemContainerOuter.ClipsDescendants = true
             ItemContainerOuter.Visible = false
             ItemContainerOuter.ZIndex = 10
@@ -1535,7 +1536,7 @@ function Library:CreateWindow(options)
 
             local ItemContainerInner = Instance.new("Frame")
             ItemContainerInner.Parent = ItemContainerOuter
-            ItemContainerInner.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+            ItemContainerInner.BackgroundColor3 = Color3.fromRGB(16, 22, 32)
             ItemContainerInner.Size = UDim2.new(1, -2, 1, -2)
             ItemContainerInner.Position = UDim2.new(0, 1, 0, 1)
             ItemContainerInner.BorderSizePixel = 0
@@ -1589,10 +1590,10 @@ function Library:CreateWindow(options)
             local function createItemBtn(item)
                 local ItemBtn = Instance.new("TextButton")
                 ItemBtn.Parent = ItemContainerInner
-                ItemBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+                ItemBtn.BackgroundColor3 = Color3.fromRGB(16, 22, 32)
                 ItemBtn.Size = UDim2.new(1, 0, 0, 20)
                 ItemBtn.Text = tostring(item)
-                ItemBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+                ItemBtn.TextColor3 = Color3.fromRGB(200, 215, 235)
                 ItemBtn.TextSize = 12
                 ItemBtn.AutoButtonColor = false
                 ItemBtn.BorderSizePixel = 0
@@ -1612,7 +1613,7 @@ function Library:CreateWindow(options)
                             for i, v in ipairs(selected) do
                                 if v == item then table.remove(selected, i) break end
                             end
-                            TweenService:Create(ItemBtn, TweenInfo.new(0.1), {TextColor3 = Color3.fromRGB(200, 200, 200)}):Play()
+                            TweenService:Create(ItemBtn, TweenInfo.new(0.1), {TextColor3 = Color3.fromRGB(200, 215, 235)}):Play()
                         end
                         updateSelectedText()
                         if flag then Library.Flags[flag] = selected end
@@ -1643,9 +1644,9 @@ function Library:CreateWindow(options)
                             for _, v in ipairs(val) do
                                 if v == btn.Text then found = true break end
                             end
-                            btn.TextColor3 = found and Library.Theme.Accent or Color3.fromRGB(200, 200, 200)
+                            btn.TextColor3 = found and Library.Theme.Accent or Color3.fromRGB(200, 215, 235)
                         else
-                            btn.TextColor3 = (val == btn.Text) and Library.Theme.Accent or Color3.fromRGB(200, 200, 200)
+                            btn.TextColor3 = (val == btn.Text) and Library.Theme.Accent or Color3.fromRGB(200, 215, 235)
                         end
                     end
                 end
@@ -1730,20 +1731,20 @@ function Library:CreateWindow(options)
 
             local CPOuter = Instance.new("Frame")
             CPOuter.Parent = parent
-            CPOuter.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            CPOuter.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
             CPOuter.Size = UDim2.new(1, -10, 0, 24)
             CPOuter.BorderSizePixel = 1
-            CPOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            CPOuter.BorderColor3 = Color3.fromRGB(28, 40, 60)
             CPOuter.ClipsDescendants = true
             AddCorner(CPOuter, 4)
 
             local CPInner = Instance.new("Frame")
             CPInner.Parent = CPOuter
-            CPInner.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+            CPInner.BackgroundColor3 = Color3.fromRGB(12, 16, 24)
             CPInner.Size = UDim2.new(1, -2, 1, -2)
             CPInner.Position = UDim2.new(0, 1, 0, 1)
             CPInner.BorderSizePixel = 1
-            CPInner.BorderColor3 = Color3.fromRGB(30, 30, 30)
+            CPInner.BorderColor3 = Color3.fromRGB(22, 32, 48)
             AddCorner(CPInner, 4)
 
             local ToggleBtn = Instance.new("TextButton")
@@ -1758,7 +1759,7 @@ function Library:CreateWindow(options)
             CPTitle.Position = UDim2.new(0, 10, 0, 0)
             CPTitle.Size = UDim2.new(1, -20, 1, 0)
             CPTitle.Text = cName
-            CPTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+            CPTitle.TextColor3 = Color3.fromRGB(240, 245, 255)
             CPTitle.TextSize = 13
             CPTitle.TextXAlignment = Enum.TextXAlignment.Left
             ApplyFont(CPTitle)
@@ -1767,9 +1768,9 @@ function Library:CreateWindow(options)
             PreviewOuter.Parent = ToggleBtn
             PreviewOuter.Position = UDim2.new(1, -30, 0, 4)
             PreviewOuter.Size = UDim2.new(0, 20, 0, 14)
-            PreviewOuter.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            PreviewOuter.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
             PreviewOuter.BorderSizePixel = 1
-            PreviewOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            PreviewOuter.BorderColor3 = Color3.fromRGB(28, 40, 60)
             AddCorner(PreviewOuter, 3)
 
             local Preview = Instance.new("Frame")
@@ -1799,9 +1800,9 @@ function Library:CreateWindow(options)
             SVOuter.Parent = CPInner
             SVOuter.Position = UDim2.new(0, 10, 0, 25)
             SVOuter.Size = UDim2.new(1, -40, 0, 120)
-            SVOuter.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            SVOuter.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
             SVOuter.BorderSizePixel = 1
-            SVOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            SVOuter.BorderColor3 = Color3.fromRGB(28, 40, 60)
             AddCorner(SVOuter, 3)
 
             local SVMap = Instance.new("ImageLabel")
@@ -1825,9 +1826,9 @@ function Library:CreateWindow(options)
             HueOuter.Parent = CPInner
             HueOuter.Position = UDim2.new(1, -25, 0, 25)
             HueOuter.Size = UDim2.new(0, 15, 0, 120)
-            HueOuter.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            HueOuter.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
             HueOuter.BorderSizePixel = 1
-            HueOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            HueOuter.BorderColor3 = Color3.fromRGB(28, 40, 60)
             AddCorner(HueOuter, 3)
 
             local HueMap = Instance.new("Frame")
@@ -1862,9 +1863,9 @@ function Library:CreateWindow(options)
             AlphaOuter.Parent = CPInner
             AlphaOuter.Position = UDim2.new(0, 10, 0, 155)
             AlphaOuter.Size = UDim2.new(1, -20, 0, 15)
-            AlphaOuter.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            AlphaOuter.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
             AlphaOuter.BorderSizePixel = 1
-            AlphaOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            AlphaOuter.BorderColor3 = Color3.fromRGB(28, 40, 60)
             AlphaOuter.Visible = useAlpha
             AddCorner(AlphaOuter, 3)
 
@@ -1999,10 +2000,10 @@ function Library:CreateWindow(options)
 
             local VOuter = Instance.new("Frame")
             VOuter.Parent = parent
-            VOuter.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+            VOuter.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
             VOuter.Size = UDim2.new(1, -10, 0, height)
             VOuter.BorderSizePixel = 1
-            VOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            VOuter.BorderColor3 = Color3.fromRGB(28, 40, 60)
             AddCorner(VOuter, 4)
 
             local VTitle = Instance.new("TextLabel")
@@ -2011,16 +2012,16 @@ function Library:CreateWindow(options)
             VTitle.Position = UDim2.new(0, 5, 0, 0)
             VTitle.Size = UDim2.new(1, -10, 0, 20)
             VTitle.Text = vName
-            VTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+            VTitle.TextColor3 = Color3.fromRGB(240, 245, 255)
             VTitle.TextSize = 12
             VTitle.TextXAlignment = Enum.TextXAlignment.Left
             ApplyFont(VTitle)
 
             local Viewport = Instance.new("ViewportFrame")
             Viewport.Parent = VOuter
-            Viewport.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+            Viewport.BackgroundColor3 = Color3.fromRGB(5, 7, 10)
             Viewport.BorderSizePixel = 1
-            Viewport.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            Viewport.BorderColor3 = Color3.fromRGB(22, 32, 48)
             Viewport.Position = UDim2.new(0, 5, 0, 20)
             Viewport.Size = UDim2.new(1, -10, 1, -25)
             Viewport.LightColor = Color3.fromRGB(255, 255, 255)
