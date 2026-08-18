@@ -802,16 +802,22 @@ function Library:CreateWindow(options)
 
                 local conn
                 conn = UserInputService.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.Keyboard then
-                        if input.KeyCode == Enum.KeyCode.Escape then
-                            conn:Disconnect()
-                            KeyBox.Text = "..."
-                            KeyBox.TextColor3 = Color3.fromRGB(240, 245, 255)
-                            return
-                        end
+                    local isMouse = input.UserInputType == Enum.UserInputType.MouseButton1 
+                                 or input.UserInputType == Enum.UserInputType.MouseButton2 
+                                 or input.UserInputType == Enum.UserInputType.MouseButton3
+                    local isKey = input.UserInputType == Enum.UserInputType.Keyboard
+
+                    if isKey and input.KeyCode == Enum.KeyCode.Escape then
                         conn:Disconnect()
-                        selectedKey = input.KeyCode
-                        KeyBox.Text = input.KeyCode.Name
+                        KeyBox.Text = "..."
+                        KeyBox.TextColor3 = Color3.fromRGB(240, 245, 255)
+                        return
+                    end
+
+                    if isMouse or isKey then
+                        conn:Disconnect()
+                        selectedKey = isMouse and input.UserInputType or input.KeyCode
+                        KeyBox.Text = selectedKey.Name
                         KeyBox.TextColor3 = Color3.fromRGB(240, 245, 255)
                         SaveKeybind()
                     end
@@ -825,16 +831,22 @@ function Library:CreateWindow(options)
 
             local conn
             conn = UserInputService.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.Keyboard then
-                    if input.KeyCode == Enum.KeyCode.Escape then
-                        conn:Disconnect()
-                        KeyBox.Text = selectedKey and selectedKey.Name or "..."
-                        KeyBox.TextColor3 = Color3.fromRGB(240, 245, 255)
-                        return
-                    end
+                local isMouse = input.UserInputType == Enum.UserInputType.MouseButton1 
+                             or input.UserInputType == Enum.UserInputType.MouseButton2 
+                             or input.UserInputType == Enum.UserInputType.MouseButton3
+                local isKey = input.UserInputType == Enum.UserInputType.Keyboard
+
+                if isKey and input.KeyCode == Enum.KeyCode.Escape then
                     conn:Disconnect()
-                    selectedKey = input.KeyCode
-                    KeyBox.Text = input.KeyCode.Name
+                    KeyBox.Text = selectedKey and selectedKey.Name or "..."
+                    KeyBox.TextColor3 = Color3.fromRGB(240, 245, 255)
+                    return
+                end
+
+                if isMouse or isKey then
+                    conn:Disconnect()
+                    selectedKey = isMouse and input.UserInputType or input.KeyCode
+                    KeyBox.Text = selectedKey.Name
                     KeyBox.TextColor3 = Color3.fromRGB(240, 245, 255)
                     SaveKeybind()
                 end
@@ -903,27 +915,49 @@ function Library:CreateWindow(options)
     end
 
     UserInputService.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Keyboard then
-            for id, bind in pairs(Library.Keybinds) do
-                if input.KeyCode == bind.Key then
-                    if bind.Mode == "Toggle" then
-                        bind.Data.Callback("toggle")
-                    elseif bind.Mode == "Hold" then
-                        Library.ActiveKeybinds[id] = true
-                        bind.Data.Callback("hold_start")
-                    end
+        local isMouse = input.UserInputType == Enum.UserInputType.MouseButton1 
+                     or input.UserInputType == Enum.UserInputType.MouseButton2 
+                     or input.UserInputType == Enum.UserInputType.MouseButton3
+        local isKey = input.UserInputType == Enum.UserInputType.Keyboard
+
+        for id, bind in pairs(Library.Keybinds) do
+            local match = false
+            if isKey and (input.KeyCode == bind.Key or input.KeyCode.Name == bind.Key or (type(bind.Key) == "table" and input.KeyCode.Name == bind.Key.Name)) then
+                match = true
+            elseif isMouse and (input.UserInputType == bind.Key or input.UserInputType.Name == bind.Key or (type(bind.Key) == "table" and input.UserInputType.Name == bind.Key.Name)) then
+                match = true
+            end
+
+            if match then
+                if bind.Mode == "Toggle" then
+                    bind.Data.Callback("toggle")
+                elseif bind.Mode == "Hold" then
+                    Library.ActiveKeybinds[id] = true
+                    bind.Data.Callback("hold_start")
+                elseif bind.Mode == "Always" then
+                    bind.Data.Callback("always")
                 end
             end
         end
     end)
 
     UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Keyboard then
-            for id, bind in pairs(Library.Keybinds) do
-                if input.KeyCode == bind.Key and bind.Mode == "Hold" then
-                    Library.ActiveKeybinds[id] = nil
-                    bind.Data.Callback("hold_end")
-                end
+        local isMouse = input.UserInputType == Enum.UserInputType.MouseButton1 
+                     or input.UserInputType == Enum.UserInputType.MouseButton2 
+                     or input.UserInputType == Enum.UserInputType.MouseButton3
+        local isKey = input.UserInputType == Enum.UserInputType.Keyboard
+
+        for id, bind in pairs(Library.Keybinds) do
+            local match = false
+            if isKey and (input.KeyCode == bind.Key or input.KeyCode.Name == bind.Key or (type(bind.Key) == "table" and input.KeyCode.Name == bind.Key.Name)) then
+                match = true
+            elseif isMouse and (input.UserInputType == bind.Key or input.UserInputType.Name == bind.Key or (type(bind.Key) == "table" and input.UserInputType.Name == bind.Key.Name)) then
+                match = true
+            end
+
+            if match and bind.Mode == "Hold" then
+                Library.ActiveKeybinds[id] = nil
+                bind.Data.Callback("hold_end")
             end
         end
     end)
