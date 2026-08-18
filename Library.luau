@@ -283,8 +283,8 @@ function Library:CreateWindow(options)
     SearchBtn.Parent = Topbar
     SearchBtn.BackgroundTransparency = 1
     SearchBtn.BorderSizePixel = 0
-    SearchBtn.Position = UDim2.new(1, -40, 0.5, -13)
-    SearchBtn.Size = UDim2.new(0, 26, 0, 26)
+    SearchBtn.Position = UDim2.new(1, -38, 0.5, -12)
+    SearchBtn.Size = UDim2.new(0, 24, 0, 24)
     SearchBtn.Text = ""
     SearchBtn.ZIndex = 25
     SearchBtn.AutoButtonColor = false
@@ -293,8 +293,8 @@ function Library:CreateWindow(options)
     SearchIconFrame.Name = "SearchIconFrame"
     SearchIconFrame.Parent = SearchBtn
     SearchIconFrame.BackgroundTransparency = 1
-    SearchIconFrame.Size = UDim2.new(0, 20, 0, 20)
-    SearchIconFrame.Position = UDim2.new(0.5, -10, 0.5, -10)
+    SearchIconFrame.Size = UDim2.new(0, 18, 0, 18)
+    SearchIconFrame.Position = UDim2.new(0.5, -9, 0.5, -9)
     SearchIconFrame.ZIndex = 26
 
     local GlassCircle = Instance.new("Frame")
@@ -302,25 +302,25 @@ function Library:CreateWindow(options)
     GlassCircle.Parent = SearchIconFrame
     GlassCircle.BackgroundTransparency = 1
     GlassCircle.Position = UDim2.new(0, 2, 0, 2)
-    GlassCircle.Size = UDim2.new(0, 8, 0, 8)
+    GlassCircle.Size = UDim2.new(0, 6, 0, 6)
     GlassCircle.BorderSizePixel = 0
     GlassCircle.ZIndex = 27
-    AddCorner(GlassCircle, 8)
+    AddCorner(GlassCircle, 6)
 
     local GlassStroke = Instance.new("UIStroke")
     GlassStroke.Parent = GlassCircle
-    GlassStroke.Thickness = 1.8
-    GlassStroke.Color = Color3.fromRGB(140, 180, 230)
+    GlassStroke.Thickness = 1.5
+    GlassStroke.Color = Color3.fromRGB(160, 190, 230)
     GlassStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
     local GlassHandle = Instance.new("Frame")
     GlassHandle.Name = "GlassHandle"
     GlassHandle.Parent = SearchIconFrame
-    GlassHandle.BackgroundColor3 = Color3.fromRGB(140, 180, 230)
+    GlassHandle.BackgroundColor3 = Color3.fromRGB(160, 190, 230)
     GlassHandle.BorderSizePixel = 0
     GlassHandle.AnchorPoint = Vector2.new(0, 0.5)
-    GlassHandle.Position = UDim2.new(0, 8.5, 0, 8.5)
-    GlassHandle.Size = UDim2.new(0, 8, 0, 1.8)
+    GlassHandle.Position = UDim2.new(0, 7.5, 0, 7.5)
+    GlassHandle.Size = UDim2.new(0, 9, 0, 1.5)
     GlassHandle.Rotation = 45
     GlassHandle.ZIndex = 27
     AddCorner(GlassHandle, 1)
@@ -442,8 +442,8 @@ function Library:CreateWindow(options)
             GlassHandle.BackgroundColor3 = Library.Theme.Accent
             SearchInput:CaptureFocus()
         else
-            GlassStroke.Color = Color3.fromRGB(140, 180, 230)
-            GlassHandle.BackgroundColor3 = Color3.fromRGB(140, 180, 230)
+            GlassStroke.Color = Color3.fromRGB(160, 190, 230)
+            GlassHandle.BackgroundColor3 = Color3.fromRGB(160, 190, 230)
             SearchInput.Text = ""
             SearchClear.Visible = false
             SearchResultsFrame.Visible = false
@@ -456,8 +456,8 @@ function Library:CreateWindow(options)
     end)
     SearchBtn.MouseLeave:Connect(function()
         if not isSearchOpen then
-            TweenService:Create(GlassStroke, TweenInfo.new(0.15), {Color = Color3.fromRGB(140, 180, 230)}):Play()
-            TweenService:Create(GlassHandle, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(140, 180, 230)}):Play()
+            TweenService:Create(GlassStroke, TweenInfo.new(0.15), {Color = Color3.fromRGB(160, 190, 230)}):Play()
+            TweenService:Create(GlassHandle, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(160, 190, 230)}):Play()
         end
     end)
 
