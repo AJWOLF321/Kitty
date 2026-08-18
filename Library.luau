@@ -282,7 +282,7 @@ function Library:CreateWindow(options)
     TabBar.Parent = MainBg
     TabBar.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
     TabBar.Position = UDim2.new(0, 6, 0, 26)
-    TabBar.Size = UDim2.new(0, 115, 1, -32)
+    TabBar.Size = UDim2.new(0.22, -6, 1, -32)
     TabBar.BorderSizePixel = 1
     TabBar.BorderColor3 = Color3.fromRGB(30, 30, 30)
     TabBar.ScrollBarThickness = 2
@@ -315,8 +315,8 @@ function Library:CreateWindow(options)
     Container.Parent = MainBg
     Container.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     Container.BackgroundTransparency = 1
-    Container.Position = UDim2.new(0, 127, 0, 26)
-    Container.Size = UDim2.new(1, -133, 1, -32)
+    Container.Position = UDim2.new(0.22, 4, 0, 26)
+    Container.Size = UDim2.new(0.78, -10, 1, -32)
     Container.BorderSizePixel = 0
 
     local ResizeHandle = Instance.new("TextButton")
@@ -752,6 +752,7 @@ function Library:CreateWindow(options)
         TabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
         TabBtn.TextSize = 12
         TabBtn.TextXAlignment = Enum.TextXAlignment.Left
+        TabBtn.TextTruncate = Enum.TextTruncate.AtEnd
         TabBtn.BorderSizePixel = 1
         TabBtn.BorderColor3 = Color3.fromRGB(35, 35, 35)
         TabBtn.AutoButtonColor = false
@@ -1219,13 +1220,13 @@ function Library:CreateWindow(options)
             local ToggleContainer = Instance.new("Frame")
             ToggleContainer.Parent = parent
             ToggleContainer.BackgroundTransparency = 1
-            ToggleContainer.Size = UDim2.new(1, 0, 0, 16)
+            ToggleContainer.Size = UDim2.new(1, 0, 0, 18)
             
             local CheckBox = Instance.new("Frame")
             CheckBox.Parent = ToggleContainer
             CheckBox.BackgroundColor3 = state and Color3.fromRGB(167, 76, 219) or Color3.fromRGB(30, 30, 30)
-            CheckBox.Position = UDim2.new(0, 2, 0.5, -6)
-            CheckBox.Size = UDim2.new(0, 12, 0, 12)
+            CheckBox.Position = UDim2.new(0, 2, 0.5, -7)
+            CheckBox.Size = UDim2.new(0, 14, 0, 14)
             CheckBox.BorderSizePixel = 1
             CheckBox.BorderColor3 = Color3.fromRGB(40, 40, 40)
             AddCorner(CheckBox, 3)
@@ -1233,12 +1234,13 @@ function Library:CreateWindow(options)
             local TTitle = Instance.new("TextLabel")
             TTitle.Parent = ToggleContainer
             TTitle.BackgroundTransparency = 1
-            TTitle.Position = UDim2.new(0, 20, 0, 0)
-            TTitle.Size = UDim2.new(1, -20, 1, 0)
+            TTitle.Position = UDim2.new(0, 24, 0, 0)
+            TTitle.Size = UDim2.new(1, -24, 1, 0)
             TTitle.Text = tName
             TTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
             TTitle.TextSize = 12
             TTitle.TextXAlignment = Enum.TextXAlignment.Left
+            TTitle.TextTruncate = Enum.TextTruncate.AtEnd
             ApplyFont(TTitle)
 
             local Btn = Instance.new("TextButton")
