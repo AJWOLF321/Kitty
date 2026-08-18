@@ -2368,17 +2368,26 @@ function Library.ConfigManager:Save(name)
         end
     end
 
-    local saveData = {
-        Flags = serializedFlags,
-        Keybinds = {}
-    }
-    
+    local savedKeybinds = {}
     for id, bind in pairs(Library.Keybinds) do
         if bind and bind.Key then
             local kName = (typeof(bind.Key) == "EnumItem" and bind.Key.Name) or (type(bind.Key) == "table" and bind.Key.Name) or tostring(bind.Key)
-            saveData.Keybinds[id] = { Key = kName, Mode = bind.Mode }
+            local targetFlag = (bind.Data and bind.Data.Flag) or (type(id) == "string" and id) or (bind.Data and bind.Data.Name)
+            if targetFlag then
+                savedKeybinds[targetFlag] = {
+                    Flag = bind.Data and bind.Data.Flag,
+                    Name = bind.Data and bind.Data.Name,
+                    Key = kName,
+                    Mode = bind.Mode or "Toggle"
+                }
+            end
         end
     end
+
+    local saveData = {
+        Flags = serializedFlags,
+        Keybinds = savedKeybinds
+    }
     
     local ok, encoded = pcall(function() return HttpService:JSONEncode(saveData) end)
     if ok and encoded then
@@ -2409,6 +2418,39 @@ function Library.ConfigManager:Load(name)
                         Library.Flags[flag] = val
                         if optionObj and optionObj.Set then
                             pcall(function() optionObj:Set(val) end)
+                        end
+                    end
+                end
+            end
+
+            if decoded.Keybinds then
+                Library.SavedKeybinds = Library.SavedKeybinds or {}
+                for bindKey, bindData in pairs(decoded.Keybinds) do
+                    local identifier = bindData.Flag or bindData.Name or bindKey
+                    local targetElem = Library.RegisteredKeybindTargets and (Library.RegisteredKeybindTargets[identifier] or (bindData.Flag and Library.RegisteredKeybindTargets[bindData.Flag]) or (bindData.Name and Library.RegisteredKeybindTargets[bindData.Name]))
+                    
+                    local keyEnum = nil
+                    pcall(function()
+                        if Enum.KeyCode[bindData.Key] then
+                            keyEnum = Enum.KeyCode[bindData.Key]
+                        elseif Enum.UserInputType[bindData.Key] then
+                            keyEnum = Enum.UserInputType[bindData.Key]
+                        end
+                    end)
+                    
+                    if keyEnum then
+                        Library.SavedKeybinds[identifier] = {
+                            Key = keyEnum,
+                            KeyName = bindData.Key,
+                            Mode = bindData.Mode or "Toggle"
+                        }
+                        if targetElem then
+                            Library.Keybinds[identifier] = {
+                                Key = keyEnum,
+                                KeyName = bindData.Key,
+                                Mode = bindData.Mode or "Toggle",
+                                Data = targetElem
+                            }
                         end
                     end
                 end
