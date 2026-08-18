@@ -4,7 +4,6 @@ local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 
--- Font Setup
 local FolderLocation = "KittyAuth"
 if not isfolder(FolderLocation) then makefolder(FolderLocation) end
 if not isfolder(FolderLocation.."\\Fonts") then makefolder(FolderLocation.."\\Fonts") end
@@ -51,6 +50,13 @@ local function ApplyFont(GuiObject)
     else
         GuiObject.Font = Enum.Font.Code
     end
+end
+
+local function AddCorner(inst, radius)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = typeof(radius) == "number" and UDim.new(0, radius) or (radius or UDim.new(0, 4))
+    corner.Parent = inst
+    return corner
 end
 
 local Library = {}
@@ -133,10 +139,6 @@ function Library:RegisterTheme(inst, themeType, propType)
     end
 end
 
-
--- ========================
--- DRAG SYSTEM
--- ========================
 local function MakeDraggable(topbarobject, object)
     local Dragging, DragInput, DragStart, StartPosition = false, nil, nil, nil
     local function Update(input)
@@ -164,9 +166,6 @@ local function MakeDraggable(topbarobject, object)
     end)
 end
 
--- ========================
--- GRADIENT HELPER
--- ========================
 local function CreateAnimatedGradientBar(parent)
     local AccentLine = Instance.new("Frame")
     AccentLine.Size = UDim2.new(1, 0, 0, 2)
@@ -174,6 +173,7 @@ local function CreateAnimatedGradientBar(parent)
     AccentLine.BorderSizePixel = 0
     AccentLine.ClipsDescendants = true
     AccentLine.Parent = parent
+    AddCorner(AccentLine, 2)
 
     local GradientFrame = Instance.new("Frame")
     GradientFrame.Size = UDim2.new(2, 0, 1, 0)
@@ -198,18 +198,14 @@ local function CreateAnimatedGradientBar(parent)
     return AccentLine, Gradient
 end
 
--- ========================
--- CREATE WINDOW
--- ========================
 function Library:CreateWindow(options)
     options = options or {}
     local Title = options.Title or "UI Library"
 
-    -- Destroy old UI
     if CoreGui:FindFirstChild("KittyUI") then CoreGui.KittyUI:Destroy() end
 
     local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = ""
+    ScreenGui.Name = "KittyUI"
     ScreenGui.Parent = game:GetService("CoreGui")
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
     Library.GUI = ScreenGui
@@ -223,6 +219,7 @@ function Library:CreateWindow(options)
     OuterFrame.BorderSizePixel = 1
     OuterFrame.BorderColor3 = Color3.fromRGB(30, 30, 30)
     OuterFrame.Parent = ScreenGui
+    AddCorner(OuterFrame, 8)
 
     local InnerFrame = Instance.new("Frame")
     InnerFrame.Name = "InnerFrame"
@@ -232,6 +229,7 @@ function Library:CreateWindow(options)
     InnerFrame.BorderSizePixel = 1
     InnerFrame.BorderColor3 = Color3.fromRGB(35, 35, 35)
     InnerFrame.Parent = OuterFrame
+    AddCorner(InnerFrame, 7)
 
     local OuterBorder = Instance.new("Frame")
     OuterBorder.Name = "OuterBorder"
@@ -241,6 +239,7 @@ function Library:CreateWindow(options)
     OuterBorder.BorderSizePixel = 1
     OuterBorder.BorderColor3 = Color3.fromRGB(30, 30, 30)
     OuterBorder.Parent = InnerFrame
+    AddCorner(OuterBorder, 6)
 
     local MainBg = Instance.new("Frame")
     MainBg.Name = "MainBg"
@@ -249,27 +248,26 @@ function Library:CreateWindow(options)
     MainBg.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     MainBg.BorderSizePixel = 0
     MainBg.Parent = OuterBorder
+    AddCorner(MainBg, 6)
 
-    -- Top gradient bar (Skeet style 1px line)
     local accentLine, gradient = CreateAnimatedGradientBar(MainBg)
-    accentLine.Size = UDim2.new(1, 0, 0, 1)
+    accentLine.Size = UDim2.new(1, 0, 0, 2)
     Library:RegisterTheme(gradient, "Accent", "Gradient")
 
-    -- Topbar (draggable)
     local Topbar = Instance.new("Frame")
     Topbar.Name = "Topbar"
     Topbar.Parent = MainBg
     Topbar.BackgroundTransparency = 1
-    Topbar.Position = UDim2.new(0, 0, 0, 1)
-    Topbar.Size = UDim2.new(1, 0, 0, 20)
+    Topbar.Position = UDim2.new(0, 0, 0, 2)
+    Topbar.Size = UDim2.new(1, 0, 0, 22)
     Topbar.BorderSizePixel = 0
     MakeDraggable(Topbar, OuterFrame)
 
     local TitleLabel = Instance.new("TextLabel")
     TitleLabel.Parent = Topbar
     TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Position = UDim2.new(0, 5, 0, 0)
-    TitleLabel.Size = UDim2.new(1, -10, 1, 0)
+    TitleLabel.Position = UDim2.new(0, 8, 0, 0)
+    TitleLabel.Size = UDim2.new(1, -16, 1, 0)
     TitleLabel.Text = Title
     TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     TitleLabel.TextSize = 12
@@ -279,42 +277,48 @@ function Library:CreateWindow(options)
     Library:RegisterTheme(MainBg, "Background", "BackgroundColor3")
     Library:RegisterTheme(TitleLabel, "Text", "TextColor3")
 
-    -- TabBar (Top Tabs, Skeet style)
-    local TabBar = Instance.new("Frame")
+    local TabBar = Instance.new("ScrollingFrame")
     TabBar.Name = "TabBar"
     TabBar.Parent = MainBg
-    TabBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    TabBar.BackgroundTransparency = 1
-    TabBar.Position = UDim2.new(0, 6, 0, 22)
-    TabBar.Size = UDim2.new(1, -12, 0, 20)
-    TabBar.BorderSizePixel = 0
+    TabBar.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+    TabBar.Position = UDim2.new(0, 6, 0, 26)
+    TabBar.Size = UDim2.new(0, 115, 1, -32)
+    TabBar.BorderSizePixel = 1
+    TabBar.BorderColor3 = Color3.fromRGB(30, 30, 30)
+    TabBar.ScrollBarThickness = 2
+    TabBar.ScrollBarImageColor3 = Color3.fromRGB(167, 76, 219)
+    TabBar.CanvasSize = UDim2.new(0, 0, 0, 0)
+    TabBar.Active = true
+    AddCorner(TabBar, 5)
+    Library:RegisterTheme(TabBar, "Background", "BackgroundColor3+1")
 
     local TabBarList = Instance.new("UIListLayout")
     TabBarList.Parent = TabBar
-    TabBarList.HorizontalAlignment = Enum.HorizontalAlignment.Left
-    TabBarList.FillDirection = Enum.FillDirection.Horizontal
+    TabBarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    TabBarList.FillDirection = Enum.FillDirection.Vertical
     TabBarList.SortOrder = Enum.SortOrder.LayoutOrder
-    TabBarList.Padding = UDim.new(0, 2)
+    TabBarList.Padding = UDim.new(0, 4)
 
-    -- Tab container background line
-    local TabBarLine = Instance.new("Frame")
-    TabBarLine.Name = "TabBarLine"
-    TabBarLine.Parent = MainBg
-    TabBarLine.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    TabBarLine.Position = UDim2.new(0, 6, 0, 42)
-    TabBarLine.Size = UDim2.new(1, -12, 0, 1)
-    TabBarLine.BorderSizePixel = 0
+    local TabBarPadding = Instance.new("UIPadding")
+    TabBarPadding.Parent = TabBar
+    TabBarPadding.PaddingTop = UDim.new(0, 5)
+    TabBarPadding.PaddingBottom = UDim.new(0, 5)
+    TabBarPadding.PaddingLeft = UDim.new(0, 4)
+    TabBarPadding.PaddingRight = UDim.new(0, 4)
 
-    -- Main container (holds left and right columns)
+    TabBarList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        TabBar.CanvasSize = UDim2.new(0, 0, 0, TabBarList.AbsoluteContentSize.Y + 10)
+    end)
+
     local Container = Instance.new("Frame")
     Container.Name = "Container"
     Container.Parent = MainBg
     Container.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     Container.BackgroundTransparency = 1
-    Container.Position = UDim2.new(0, 6, 0, 50)
-    Container.Size = UDim2.new(1, -12, 1, -56)
+    Container.Position = UDim2.new(0, 127, 0, 26)
+    Container.Size = UDim2.new(1, -133, 1, -32)
     Container.BorderSizePixel = 0
-    -- Resize Handle
+
     local ResizeHandle = Instance.new("TextButton")
     ResizeHandle.Name = "ResizeHandle"
     ResizeHandle.Parent = OuterFrame
@@ -360,7 +364,6 @@ function Library:CreateWindow(options)
         end
     end)
 
-    -- Insert toggle
     Library.ToggleKey = Enum.KeyCode.Insert
     UserInputService.InputBegan:Connect(function(input, gpe)
         if gpe then return end
@@ -370,9 +373,6 @@ function Library:CreateWindow(options)
         end
     end)
 
-    -- ========================
-    -- KEYBINDS LIST (draggable side panel)
-    -- ========================
     local KeybindList = Instance.new("Frame")
     KeybindList.Name = "KeybindList"
     KeybindList.Parent = ScreenGui
@@ -385,6 +385,7 @@ function Library:CreateWindow(options)
     KeybindList.Visible = false
     MakeDraggable(KeybindList, KeybindList)
     Library.KeybindList = KeybindList
+    AddCorner(KeybindList, 5)
     
     local keybindLine, keybindGradient = CreateAnimatedGradientBar(KeybindList)
     Library:RegisterTheme(keybindGradient, "Accent", "Gradient")
@@ -414,110 +415,6 @@ function Library:CreateWindow(options)
     KeybindLayout.SortOrder = Enum.SortOrder.LayoutOrder
     KeybindLayout.Padding = UDim.new(0, 2)
 
-    -- ========================
-    -- HOTBAR VIEWER (draggable side panel)
-    -- ========================
-    local HotbarViewer = Instance.new("Frame")
-    HotbarViewer.Name = "HotbarViewer"
-    HotbarViewer.Parent = ScreenGui
-    HotbarViewer.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-    HotbarViewer.Position = UDim2.new(0, 20, 0.5, 30)
-    HotbarViewer.Size = UDim2.new(0, 180, 0, 25)
-    HotbarViewer.BorderSizePixel = 1
-    HotbarViewer.BorderColor3 = Color3.fromRGB(40, 40, 40)
-    HotbarViewer.ClipsDescendants = true
-    HotbarViewer.Visible = false
-    MakeDraggable(HotbarViewer, HotbarViewer)
-    Library.HotbarViewer = HotbarViewer
-    
-    local hotbarLine, hotbarGradient = CreateAnimatedGradientBar(HotbarViewer)
-    Library:RegisterTheme(hotbarGradient, "Accent", "Gradient")
-
-    local HotbarViewerTitle = Instance.new("TextLabel")
-    HotbarViewerTitle.Parent = HotbarViewer
-    HotbarViewerTitle.BackgroundTransparency = 1
-    HotbarViewerTitle.Position = UDim2.new(0, 0, 0, 2)
-    HotbarViewerTitle.Size = UDim2.new(1, 0, 0, 23)
-    HotbarViewerTitle.Text = "Hotbar"
-    HotbarViewerTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    HotbarViewerTitle.TextSize = 13
-    ApplyFont(HotbarViewerTitle)
-    
-    Library:RegisterTheme(HotbarViewer, "Background", "BackgroundColor3")
-    Library:RegisterTheme(HotbarViewerTitle, "Text", "TextColor3")
-
-    local HotbarContainer = Instance.new("Frame")
-    HotbarContainer.Parent = HotbarViewer
-    HotbarContainer.BackgroundTransparency = 1
-    HotbarContainer.Position = UDim2.new(0, 0, 0, 25)
-    HotbarContainer.Size = UDim2.new(1, 0, 1, -25)
-    HotbarContainer.ZIndex = 3
-
-    local HotbarLayout = Instance.new("UIListLayout")
-    HotbarLayout.Parent = HotbarContainer
-    HotbarLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    HotbarLayout.FillDirection = Enum.FillDirection.Horizontal
-    HotbarLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    HotbarLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-    HotbarLayout.Padding = UDim.new(0, 2)
-    
-    function Library:UpdateHotbar(title, items)
-        HotbarViewerTitle.Text = title
-        for _, v in ipairs(HotbarContainer:GetChildren()) do
-            if v:IsA("Frame") or v:IsA("TextLabel") then v:Destroy() end
-        end
-        if items and #items > 0 then
-            for _, item in ipairs(items) do
-                local slot = Instance.new("Frame")
-                slot.Parent = HotbarContainer
-                slot.Size = UDim2.new(0, 45, 0, 45)
-                slot.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-                slot.BorderSizePixel = 1
-                slot.BorderColor3 = item.equipped and Color3.fromRGB(100, 255, 100) or Color3.fromRGB(50, 50, 50)
-                
-                if item.icon and item.icon ~= "" then
-                    local icon = Instance.new("ImageLabel")
-                    icon.Parent = slot
-                    icon.BackgroundTransparency = 1
-                    icon.Size = UDim2.new(1, -4, 1, -4)
-                    icon.Position = UDim2.new(0, 2, 0, 2)
-                    icon.Image = item.icon
-                    icon.ScaleType = Enum.ScaleType.Fit
-                else
-                    local nameLbl = Instance.new("TextLabel")
-                    nameLbl.Parent = slot
-                    nameLbl.BackgroundTransparency = 1
-                    nameLbl.Size = UDim2.new(1, -4, 1, -4)
-                    nameLbl.Position = UDim2.new(0, 2, 0, 2)
-                    nameLbl.Text = item.name
-                    nameLbl.TextColor3 = Color3.fromRGB(200, 200, 200)
-                    nameLbl.TextSize = 10
-                    nameLbl.TextWrapped = true
-                    nameLbl.ZIndex = 3
-                    nameLbl.Font = Enum.Font.Code
-                end
-            end
-            local width = #items * 47
-            HotbarViewer.Size = UDim2.new(0, math.max(180, width + 5), 0, 25 + 45 + 5)
-        else
-            local lbl = Instance.new("TextLabel")
-            lbl.Parent = HotbarContainer
-            lbl.BackgroundTransparency = 1
-            lbl.Size = UDim2.new(1, 0, 0, 18)
-            lbl.Text = "  Empty"
-            lbl.TextColor3 = Color3.fromRGB(150, 150, 150)
-            lbl.TextSize = 12
-            lbl.TextXAlignment = Enum.TextXAlignment.Left
-            lbl.ZIndex = 3
-            lbl.Font = Enum.Font.Code
-            pcall(function() ApplyFont(lbl) end)
-            HotbarViewer.Size = UDim2.new(0, 180, 0, 45)
-        end
-    end
-
-    -- ========================
-    -- CONTEXT MENU (Fatality-style keybind) - Uses backdrop approach
-    -- ========================
     local Backdrop = Instance.new("TextButton")
     Backdrop.Name = ""
     Backdrop.Parent = ScreenGui
@@ -537,6 +434,7 @@ function Library:CreateWindow(options)
     ContextMenu.BorderSizePixel = 1
     ContextMenu.BorderColor3 = Color3.fromRGB(40, 40, 40)
     ContextMenu.ZIndex = 100
+    AddCorner(ContextMenu, 5)
 
     local function CloseContextMenu()
         Backdrop.Visible = false
@@ -545,16 +443,16 @@ function Library:CreateWindow(options)
     Backdrop.MouseButton1Click:Connect(CloseContextMenu)
 
     local function ShowContextMenu(pos, elementData)
-        -- Clear old children
         for _, v in ipairs(ContextMenu:GetChildren()) do
-            v:Destroy()
+            if not v:IsA("UICorner") then
+                v:Destroy()
+            end
         end
 
         ContextMenu.Position = UDim2.new(0, pos.X, 0, pos.Y)
         ContextMenu.Size = UDim2.new(0, 200, 0, 55)
         Backdrop.Visible = true
 
-        -- Title row
         local TitleRow = Instance.new("TextLabel")
         TitleRow.Parent = ContextMenu
         TitleRow.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
@@ -567,8 +465,8 @@ function Library:CreateWindow(options)
         TitleRow.BorderSizePixel = 0
         TitleRow.ZIndex = 101
         ApplyFont(TitleRow)
+        AddCorner(TitleRow, 4)
 
-        -- Keybind row: [+ button] [key box] [mode dropdown]
         local BindRow = Instance.new("Frame")
         BindRow.Parent = ContextMenu
         BindRow.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
@@ -576,11 +474,10 @@ function Library:CreateWindow(options)
         BindRow.Position = UDim2.new(0, 0, 0, 22)
         BindRow.BorderSizePixel = 0
         BindRow.ZIndex = 101
+        AddCorner(BindRow, 4)
 
-        -- Check if keybind already exists
         local existingBind = Library.Keybinds[elementData.Id]
 
-        -- The "+" / "-" button on the left
         local PlusBtn = Instance.new("TextButton")
         PlusBtn.Parent = BindRow
         PlusBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -594,8 +491,8 @@ function Library:CreateWindow(options)
         PlusBtn.ZIndex = 102
         PlusBtn.AutoButtonColor = false
         ApplyFont(PlusBtn)
+        AddCorner(PlusBtn, 3)
 
-        -- Key display box
         local KeyBox = Instance.new("TextButton")
         KeyBox.Parent = BindRow
         KeyBox.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -610,8 +507,8 @@ function Library:CreateWindow(options)
         KeyBox.AutoButtonColor = false
         KeyBox.Visible = existingBind ~= nil
         ApplyFont(KeyBox)
+        AddCorner(KeyBox, 3)
 
-        -- Mode dropdown button
         local ModeBtn = Instance.new("TextButton")
         ModeBtn.Parent = BindRow
         ModeBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -626,6 +523,7 @@ function Library:CreateWindow(options)
         ModeBtn.AutoButtonColor = false
         ModeBtn.Visible = existingBind ~= nil
         ApplyFont(ModeBtn)
+        AddCorner(ModeBtn, 3)
 
         local selectedKey = existingBind and existingBind.Key or nil
         local selectedMode = existingBind and existingBind.Mode or "Toggle"
@@ -636,24 +534,20 @@ function Library:CreateWindow(options)
             end
         end
 
-        -- Plus button: create or remove keybind
         PlusBtn.MouseButton1Click:Connect(function()
             if KeyBox.Visible then
-                -- Remove keybind
                 Library.Keybinds[elementData.Id] = nil
                 KeyBox.Visible = false
                 ModeBtn.Visible = false
                 PlusBtn.Text = "+"
                 selectedKey = nil
             else
-                -- Show keybind creation
                 KeyBox.Visible = true
                 ModeBtn.Visible = true
                 PlusBtn.Text = "-"
                 KeyBox.Text = "..."
                 KeyBox.TextColor3 = Color3.fromRGB(167, 76, 219)
 
-                -- Wait for key press
                 local conn
                 conn = UserInputService.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.Keyboard then
@@ -673,7 +567,6 @@ function Library:CreateWindow(options)
             end
         end)
 
-        -- Click key box to rebind
         KeyBox.MouseButton1Click:Connect(function()
             KeyBox.Text = "..."
             KeyBox.TextColor3 = Color3.fromRGB(167, 76, 219)
@@ -696,11 +589,9 @@ function Library:CreateWindow(options)
             end)
         end)
 
-        -- Mode dropdown: expands to show Toggle/Hold/Always
         local modes = {"Toggle", "Hold", "Always"}
         local modeDropOpen = false
 
-        -- Mode items container (sits below ModeBtn)
         local ModeItemsFrame = Instance.new("Frame")
         ModeItemsFrame.Parent = ContextMenu
         ModeItemsFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
@@ -710,6 +601,7 @@ function Library:CreateWindow(options)
         ModeItemsFrame.BorderColor3 = Color3.fromRGB(40, 40, 40)
         ModeItemsFrame.ZIndex = 110
         ModeItemsFrame.Visible = false
+        AddCorner(ModeItemsFrame, 3)
 
         local ModeItemList = Instance.new("UIListLayout")
         ModeItemList.Parent = ModeItemsFrame
@@ -728,6 +620,7 @@ function Library:CreateWindow(options)
             mItem.AutoButtonColor = false
             mItem.Font = Enum.Font.Code
             ApplyFont(mItem)
+            AddCorner(mItem, 2)
 
             mItem.MouseEnter:Connect(function()
                 mItem.TextColor3 = Color3.fromRGB(167, 76, 219)
@@ -757,7 +650,6 @@ function Library:CreateWindow(options)
         end)
     end
 
-    -- Global keybind handler
     UserInputService.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Keyboard then
             for id, bind in pairs(Library.Keybinds) do
@@ -784,7 +676,6 @@ function Library:CreateWindow(options)
         end
     end)
 
-    -- Keybind list updater + Always mode
     local lastActiveCount = -1
     RunService.RenderStepped:Connect(function()
         for id, bind in pairs(Library.Keybinds) do
@@ -800,7 +691,6 @@ function Library:CreateWindow(options)
 
         if #activeBinds ~= lastActiveCount then
             lastActiveCount = #activeBinds
-            -- Rebuild keybind list UI
             for _, v in ipairs(KeybindContainer:GetChildren()) do
                 if v:IsA("TextLabel") then v:Destroy() end
             end
@@ -821,7 +711,6 @@ function Library:CreateWindow(options)
             end
             KeybindList.Size = UDim2.new(0, 180, 0, 25 + (#activeBinds * 20))
         else
-            -- Just update text to avoid font reloading bugs
             local idx = 1
             for _, v in ipairs(KeybindContainer:GetChildren()) do
                 if v:IsA("TextLabel") and activeBinds[idx] then
@@ -847,9 +736,6 @@ function Library:CreateWindow(options)
         end
     end)
 
-    -- ========================
-    -- WINDOW OBJECT
-    -- ========================
     local WindowObj = {
         CurrentTab = nil,
         Tabs = {}
@@ -861,36 +747,27 @@ function Library:CreateWindow(options)
         TabBtn.Parent = TabBar
         TabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
         TabBtn.BackgroundTransparency = 0
-        TabBtn.Size = UDim2.new(0, 70, 1, 0)
-        TabBtn.Text = name
+        TabBtn.Size = UDim2.new(1, 0, 0, 28)
+        TabBtn.Text = "  " .. name
         TabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
         TabBtn.TextSize = 12
+        TabBtn.TextXAlignment = Enum.TextXAlignment.Left
         TabBtn.BorderSizePixel = 1
-        TabBtn.BorderColor3 = Color3.fromRGB(40, 40, 40)
+        TabBtn.BorderColor3 = Color3.fromRGB(35, 35, 35)
         TabBtn.AutoButtonColor = false
         ApplyFont(TabBtn)
+        AddCorner(TabBtn, 4)
         
-        -- The Accent line at the top of the tab
         local TabAccent = Instance.new("Frame")
         TabAccent.Name = "TabAccent"
         TabAccent.Parent = TabBtn
-        TabAccent.Size = UDim2.new(1, 0, 0, 1)
-        TabAccent.Position = UDim2.new(0, 0, 0, 0)
+        TabAccent.Size = UDim2.new(0, 3, 0.7, 0)
+        TabAccent.Position = UDim2.new(0, 2, 0.15, 0)
         TabAccent.BorderSizePixel = 0
         TabAccent.Visible = false
+        AddCorner(TabAccent, 2)
         Library:RegisterTheme(TabAccent, "Accent", "BackgroundColor3")
 
-        -- To hide the bottom border when active (creates the illusion of merging with the container)
-        local BottomCover = Instance.new("Frame")
-        BottomCover.Name = "BottomCover"
-        BottomCover.Parent = TabBtn
-        BottomCover.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-        BottomCover.Size = UDim2.new(1, 0, 0, 2)
-        BottomCover.Position = UDim2.new(0, 0, 1, 0)
-        BottomCover.BorderSizePixel = 0
-        BottomCover.Visible = false
-
-        -- Tab page is a frame that holds LEFT and RIGHT columns
         local TabPage = Instance.new("Frame")
         TabPage.Name = name.."_Page"
         TabPage.Parent = Container
@@ -899,7 +776,6 @@ function Library:CreateWindow(options)
         TabPage.Size = UDim2.new(1, 0, 1, 0)
         TabPage.Visible = false
 
-        -- Left column
         local LeftColumn = Instance.new("ScrollingFrame")
         LeftColumn.Name = "LeftColumn"
         LeftColumn.Parent = TabPage
@@ -912,6 +788,7 @@ function Library:CreateWindow(options)
         LeftColumn.ScrollBarImageColor3 = Color3.fromRGB(167, 76, 219)
         LeftColumn.CanvasSize = UDim2.new(0, 0, 0, 0)
         LeftColumn.Active = true
+        AddCorner(LeftColumn, 5)
 
         local LeftList = Instance.new("UIListLayout")
         LeftList.Parent = LeftColumn
@@ -929,7 +806,6 @@ function Library:CreateWindow(options)
         end)
         Library:RegisterTheme(LeftColumn, "Background", "BackgroundColor3+1")
 
-        -- Right column
         local RightColumn = Instance.new("ScrollingFrame")
         RightColumn.Name = "RightColumn"
         RightColumn.Parent = TabPage
@@ -942,6 +818,7 @@ function Library:CreateWindow(options)
         RightColumn.ScrollBarImageColor3 = Color3.fromRGB(167, 76, 219)
         RightColumn.CanvasSize = UDim2.new(0, 0, 0, 0)
         RightColumn.Active = true
+        AddCorner(RightColumn, 5)
 
         local RightList = Instance.new("UIListLayout")
         RightList.Parent = RightColumn
@@ -959,33 +836,31 @@ function Library:CreateWindow(options)
         end)
         Library:RegisterTheme(RightColumn, "Background", "BackgroundColor3+1")
 
-        -- Sub-tabs bar at the top of the tab page
         local SubTabBar = Instance.new("Frame")
         SubTabBar.Name = "SubTabBar"
         SubTabBar.Parent = TabPage
         SubTabBar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
         SubTabBar.Position = UDim2.new(0, 0, 0, 0)
-        SubTabBar.Size = UDim2.new(1, 0, 0, 0) -- starts hidden, grows when subtabs are added
+        SubTabBar.Size = UDim2.new(1, 0, 0, 0)
         SubTabBar.BorderSizePixel = 1
         SubTabBar.BorderColor3 = Color3.fromRGB(30, 30, 30)
         SubTabBar.Visible = false
+        AddCorner(SubTabBar, 4)
 
         local SubTabBarList = Instance.new("UIListLayout")
         SubTabBarList.Parent = SubTabBar
         SubTabBarList.FillDirection = Enum.FillDirection.Horizontal
         SubTabBarList.SortOrder = Enum.SortOrder.LayoutOrder
-        SubTabBarList.Padding = UDim.new(0, 0)
+        SubTabBarList.Padding = UDim.new(0, 2)
 
         table.insert(WindowObj.Tabs, {Btn = TabBtn, Page = TabPage})
         
-        -- Tab switching
         Library.OnTabChange.Event:Connect(function()
             if WindowObj.CurrentTab ~= name then
                 TabPage.Visible = false
-                TabBtn.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+                TabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
                 TabBtn.TextColor3 = Color3.fromRGB(150, 150, 150)
                 TabAccent.Visible = false
-                BottomCover.Visible = false
             end
         end)
 
@@ -993,19 +868,17 @@ function Library:CreateWindow(options)
             WindowObj.CurrentTab = name
             Library.OnTabChange:Fire()
             TabPage.Visible = true
-            TabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+            TabBtn.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
             TabBtn.TextColor3 = Library.Theme.Accent
             TabAccent.Visible = true
-            BottomCover.Visible = true
         end)
 
         if #WindowObj.Tabs == 1 then
             WindowObj.CurrentTab = name
             TabPage.Visible = true
-            TabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+            TabBtn.BackgroundColor3 = Color3.fromRGB(28, 28, 28)
             TabBtn.TextColor3 = Library.Theme.Accent
             TabAccent.Visible = true
-            BottomCover.Visible = true
         end
         
         Library:RegisterTheme(function(color)
@@ -1014,9 +887,6 @@ function Library:CreateWindow(options)
             end
         end, "Accent", "Custom")
 
-        -- ========================
-        -- TAB API
-        -- ========================
         local Tab = {}
         local subTabs = {}
         local currentSubTab = nil
@@ -1030,14 +900,13 @@ function Library:CreateWindow(options)
         end
 
         function Tab:CreateSubTab(name)
-            -- Show the sub-tab bar
             if not SubTabBar.Visible then
                 SubTabBar.Visible = true
                 SubTabBar.Size = UDim2.new(1, 0, 0, 22)
-                LeftColumn.Position = UDim2.new(0, 0, 0, 25)
-                LeftColumn.Size = UDim2.new(0.5, -3, 1, -25)
-                RightColumn.Position = UDim2.new(0.5, 3, 0, 25)
-                RightColumn.Size = UDim2.new(0.5, -3, 1, -25)
+                LeftColumn.Position = UDim2.new(0, 0, 0, 26)
+                LeftColumn.Size = UDim2.new(0.5, -3, 1, -26)
+                RightColumn.Position = UDim2.new(0.5, 3, 0, 26)
+                RightColumn.Size = UDim2.new(0.5, -3, 1, -26)
             end
 
             local subTabBtn = Instance.new("TextButton")
@@ -1048,50 +917,72 @@ function Library:CreateWindow(options)
             subTabBtn.Text = name
             subTabBtn.TextColor3 = Color3.fromRGB(120, 120, 120)
             subTabBtn.TextSize = 12
+            subTabBtn.BorderSizePixel = 1
+            subTabBtn.BorderColor3 = Color3.fromRGB(35, 35, 35)
             subTabBtn.AutoButtonColor = false
-            subTabBtn.BorderSizePixel = 0
             ApplyFont(subTabBtn)
+            AddCorner(subTabBtn, 3)
 
-            local subTabData = {Btn = subTabBtn, Elements = {}}
-            table.insert(subTabs, subTabData)
+            local SubTabAccent = Instance.new("Frame")
+            SubTabAccent.Parent = subTabBtn
+            SubTabAccent.Size = UDim2.new(1, 0, 0, 1)
+            SubTabAccent.Position = UDim2.new(0, 0, 0, 0)
+            SubTabAccent.BorderSizePixel = 0
+            SubTabAccent.Visible = false
+            Library:RegisterTheme(SubTabAccent, "Accent", "BackgroundColor3")
+
+            table.insert(subTabs, {Name = name, Btn = subTabBtn, Elements = {}})
+
+            local function switchSubTab(targetName)
+                currentSubTab = targetName
+                for _, st in ipairs(subTabs) do
+                    local isTarget = (st.Name == targetName)
+                    st.Btn.TextColor3 = isTarget and Library.Theme.Accent or Color3.fromRGB(120, 120, 120)
+                    st.Btn.BackgroundColor3 = isTarget and Color3.fromRGB(25, 25, 25) or Color3.fromRGB(20, 20, 20)
+                    for _, elem in ipairs(st.Elements) do
+                        elem.Visible = isTarget
+                    end
+                end
+            end
 
             subTabBtn.MouseButton1Click:Connect(function()
-                -- Hide all subtab elements
-                for _, st in ipairs(subTabs) do
-                    for _, el in ipairs(st.Elements) do
-                        el.Visible = false
-                    end
-                    st.Btn.TextColor3 = Color3.fromRGB(120, 120, 120)
-                end
-                -- Show this subtab elements
-                for _, el in ipairs(subTabData.Elements) do
-                    el.Visible = true
-                end
-                subTabBtn.TextColor3 = Library.Theme.Accent
-                currentSubTab = subTabData
+                switchSubTab(name)
             end)
 
-            -- Auto-select first subtab visually
             if #subTabs == 1 then
-                subTabBtn.TextColor3 = Library.Theme.Accent
+                switchSubTab(name)
             end
-            
-            -- Set currentSubTab so subsequent elements are added to this subtab
-            currentSubTab = subTabData
-            
-            Library:RegisterTheme(function(color)
-                if currentSubTab == subTabData then
-                    subTabBtn.TextColor3 = color
-                end
-            end, "Accent", "Custom")
 
-            return subTabData
+            local SubTab = {}
+            function SubTab:CreateSection(sName, side)
+                return Tab:CreateSection(sName, side)
+            end
+            function SubTab:CreateButton(opts) return Tab:CreateButton(opts) end
+            function SubTab:CreateInputButton(opts) return Tab:CreateInputButton(opts) end
+            function SubTab:CreateTextBox(opts) return Tab:CreateTextBox(opts) end
+            function SubTab:CreateToggle(opts) return Tab:CreateToggle(opts) end
+            function SubTab:CreateSlider(opts) return Tab:CreateSlider(opts) end
+            function SubTab:CreateDropdown(opts) return Tab:CreateDropdown(opts) end
+            function SubTab:CreateColorPicker(opts) return Tab:CreateColorPicker(opts) end
+            function SubTab:CreateViewport(opts) return Tab:CreateViewport(opts) end
+
+            return SubTab
         end
 
         local function TrackElement(element)
-            if currentSubTab then
-                table.insert(currentSubTab.Elements, element)
-                -- If this is not the first subtab, hide it
+            if #subTabs > 0 then
+                local currentST = nil
+                for _, st in ipairs(subTabs) do
+                    if st.Name == currentSubTab then
+                        currentST = st
+                        break
+                    end
+                end
+                if currentST then
+                    table.insert(currentST.Elements, element)
+                else
+                    table.insert(subTabs[1].Elements, element)
+                end
                 if subTabs[1] ~= currentSubTab then
                     element.Visible = false
                 end
@@ -1107,6 +998,7 @@ function Library:CreateWindow(options)
             GroupboxOuter.BorderSizePixel = 1
             GroupboxOuter.BorderColor3 = Color3.fromRGB(35, 35, 35)
             GroupboxOuter.Size = UDim2.new(1, -8, 0, 20)
+            AddCorner(GroupboxOuter, 5)
             
             local GroupboxInner = Instance.new("Frame")
             GroupboxInner.Parent = GroupboxOuter
@@ -1114,6 +1006,7 @@ function Library:CreateWindow(options)
             GroupboxInner.BorderSizePixel = 0
             GroupboxInner.Size = UDim2.new(1, -2, 1, -2)
             GroupboxInner.Position = UDim2.new(0, 1, 0, 1)
+            AddCorner(GroupboxInner, 4)
 
             local AccentLine = Instance.new("Frame")
             AccentLine.Parent = GroupboxInner
@@ -1179,6 +1072,7 @@ function Library:CreateWindow(options)
             Btn.BorderColor3 = Color3.fromRGB(40, 40, 40)
             Btn.AutoButtonColor = false
             ApplyFont(Btn)
+            AddCorner(Btn, 4)
 
             Library:RegisterTheme(Btn, "Text", "TextColor3")
 
@@ -1216,6 +1110,7 @@ function Library:CreateWindow(options)
             BtnBox.BorderColor3 = Color3.fromRGB(40, 40, 40)
             BtnBox.ClearTextOnFocus = true
             ApplyFont(BtnBox)
+            AddCorner(BtnBox, 4)
 
             Library:RegisterTheme(BtnBox, "Text", "TextColor3")
 
@@ -1267,6 +1162,7 @@ function Library:CreateWindow(options)
             TBox.ClearTextOnFocus = clearOnFocus
             TBox.Parent = parent
             ApplyFont(TBox)
+            AddCorner(TBox, 4)
 
             Library:RegisterTheme(TBox, "Text", "TextColor3")
 
@@ -1332,6 +1228,7 @@ function Library:CreateWindow(options)
             CheckBox.Size = UDim2.new(0, 12, 0, 12)
             CheckBox.BorderSizePixel = 1
             CheckBox.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            AddCorner(CheckBox, 3)
 
             local TTitle = Instance.new("TextLabel")
             TTitle.Parent = ToggleContainer
@@ -1441,6 +1338,7 @@ function Library:CreateWindow(options)
             TrackOuter.Size = UDim2.new(1, 0, 0, 14)
             TrackOuter.BorderSizePixel = 1
             TrackOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            AddCorner(TrackOuter, 3)
 
             local TrackInner = Instance.new("Frame")
             TrackInner.Parent = TrackOuter
@@ -1448,12 +1346,14 @@ function Library:CreateWindow(options)
             TrackInner.Size = UDim2.new(1, -2, 1, -2)
             TrackInner.Position = UDim2.new(0, 1, 0, 1)
             TrackInner.BorderSizePixel = 0
+            AddCorner(TrackInner, 3)
 
             local Fill = Instance.new("Frame")
             Fill.Parent = TrackInner
             Fill.BackgroundColor3 = Color3.fromRGB(167, 76, 219)
             Fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
             Fill.BorderSizePixel = 0
+            AddCorner(Fill, 3)
 
             local ValueLabel = Instance.new("TextBox")
             ValueLabel.Parent = TrackOuter
@@ -1536,95 +1436,6 @@ function Library:CreateWindow(options)
             return sliderObj
         end
 
-        function Tab:CreateTextBox(options)
-            local tName = options.Name or "TextBox"
-            local default = options.Default or ""
-            local callback = options.Callback or function() end
-            local side = options.Side or "left"
-            local flag = options.Flag
-            local parent = GetParent(side)
-            
-            if flag then
-                if Library.Flags[flag] ~= nil then
-                    default = Library.Flags[flag]
-                else
-                    Library.Flags[flag] = default
-                end
-            end
-
-            local TBOuter = Instance.new("Frame")
-            TBOuter.Parent = parent
-            TBOuter.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-            TBOuter.Size = UDim2.new(1, -10, 0, 46)
-            TBOuter.BorderSizePixel = 1
-            TBOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
-
-            local TBInner = Instance.new("Frame")
-            TBInner.Parent = TBOuter
-            TBInner.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-            TBInner.Size = UDim2.new(1, -2, 1, -2)
-            TBInner.Position = UDim2.new(0, 1, 0, 1)
-            TBInner.BorderSizePixel = 1
-            TBInner.BorderColor3 = Color3.fromRGB(30, 30, 30)
-
-            local Title = Instance.new("TextLabel")
-            Title.Parent = TBInner
-            Title.BackgroundTransparency = 1
-            Title.Position = UDim2.new(0, 10, 0, 0)
-            Title.Size = UDim2.new(1, -20, 0, 20)
-            Title.Text = tName
-            Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-            Title.TextSize = 13
-            Title.TextXAlignment = Enum.TextXAlignment.Left
-            ApplyFont(Title)
-
-            local BoxOuter = Instance.new("Frame")
-            BoxOuter.Parent = TBInner
-            BoxOuter.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-            BoxOuter.Position = UDim2.new(0, 10, 0, 22)
-            BoxOuter.Size = UDim2.new(1, -20, 0, 18)
-            BoxOuter.BorderSizePixel = 1
-            BoxOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
-
-            local Box = Instance.new("TextBox")
-            Box.Parent = BoxOuter
-            Box.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-            Box.Size = UDim2.new(1, -2, 1, -2)
-            Box.Position = UDim2.new(0, 1, 0, 1)
-            Box.BorderSizePixel = 0
-            Box.Text = default
-            Box.TextColor3 = Color3.fromRGB(255, 255, 255)
-            Box.TextSize = 12
-            Box.ClearTextOnFocus = false
-            ApplyFont(Box)
-
-            Box.FocusLost:Connect(function()
-                if flag then Library.Flags[flag] = Box.Text end
-                callback(Box.Text)
-            end)
-            
-            Library:RegisterTheme(Title, "Text", "TextColor3")
-            Library:RegisterTheme(Box, "Text", "TextColor3")
-            Library:RegisterTheme(TBOuter, "Main", "BackgroundColor3")
-            Library:RegisterTheme(TBInner, "Main", "BackgroundColor3+1")
-            Library:RegisterTheme(BoxOuter, "Main", "BackgroundColor3")
-            Library:RegisterTheme(Box, "Main", "BackgroundColor3+2")
-            TrackElement(TBOuter)
-            
-            local tbObj = {
-                Set = function(self, val)
-                    Box.Text = tostring(val)
-                    if flag then Library.Flags[flag] = Box.Text end
-                    callback(Box.Text)
-                end,
-                Get = function(self) return Box.Text end,
-                Show = function(self) TBOuter.Visible = true end,
-                Hide = function(self) TBOuter.Visible = false end
-            }
-            if flag then Library.Options[flag] = tbObj end
-            return tbObj
-        end
-
         function Tab:CreateDropdown(options)
             local dName = options.Name or "Dropdown"
             local items = options.Items or {}
@@ -1667,6 +1478,7 @@ function Library:CreateWindow(options)
             DropdownOuter.BorderSizePixel = 1
             DropdownOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
             DropdownOuter.ZIndex = 5
+            AddCorner(DropdownOuter, 4)
 
             local DropdownInner = Instance.new("Frame")
             DropdownInner.Parent = DropdownOuter
@@ -1675,6 +1487,7 @@ function Library:CreateWindow(options)
             DropdownInner.Position = UDim2.new(0, 1, 0, 1)
             DropdownInner.BorderSizePixel = 0
             DropdownInner.ZIndex = 5
+            AddCorner(DropdownInner, 4)
 
             local HeaderBtn = Instance.new("TextButton")
             HeaderBtn.Parent = DropdownInner
@@ -1716,6 +1529,7 @@ function Library:CreateWindow(options)
             ItemContainerOuter.ClipsDescendants = true
             ItemContainerOuter.Visible = false
             ItemContainerOuter.ZIndex = 10
+            AddCorner(ItemContainerOuter, 4)
 
             local ItemContainerInner = Instance.new("Frame")
             ItemContainerInner.Parent = ItemContainerOuter
@@ -1724,6 +1538,7 @@ function Library:CreateWindow(options)
             ItemContainerInner.Position = UDim2.new(0, 1, 0, 1)
             ItemContainerInner.BorderSizePixel = 0
             ItemContainerInner.ZIndex = 10
+            AddCorner(ItemContainerInner, 4)
 
             local ItemList = Instance.new("UIListLayout")
             ItemList.Parent = ItemContainerInner
@@ -1767,7 +1582,7 @@ function Library:CreateWindow(options)
                 end
             end
 
-            local setValue -- Forward declaration
+            local setValue
 
             local function createItemBtn(item)
                 local ItemBtn = Instance.new("TextButton")
@@ -1781,6 +1596,7 @@ function Library:CreateWindow(options)
                 ItemBtn.BorderSizePixel = 0
                 ItemBtn.ZIndex = 11
                 ApplyFont(ItemBtn)
+                AddCorner(ItemBtn, 3)
 
                 local itemSelected = false
 
@@ -1913,10 +1729,11 @@ function Library:CreateWindow(options)
             local CPOuter = Instance.new("Frame")
             CPOuter.Parent = parent
             CPOuter.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-            CPOuter.Size = UDim2.new(1, -10, 0, 24) -- Collapsed by default
+            CPOuter.Size = UDim2.new(1, -10, 0, 24)
             CPOuter.BorderSizePixel = 1
             CPOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
             CPOuter.ClipsDescendants = true
+            AddCorner(CPOuter, 4)
 
             local CPInner = Instance.new("Frame")
             CPInner.Parent = CPOuter
@@ -1925,6 +1742,7 @@ function Library:CreateWindow(options)
             CPInner.Position = UDim2.new(0, 1, 0, 1)
             CPInner.BorderSizePixel = 1
             CPInner.BorderColor3 = Color3.fromRGB(30, 30, 30)
+            AddCorner(CPInner, 4)
 
             local ToggleBtn = Instance.new("TextButton")
             ToggleBtn.Parent = CPInner
@@ -1943,7 +1761,6 @@ function Library:CreateWindow(options)
             CPTitle.TextXAlignment = Enum.TextXAlignment.Left
             ApplyFont(CPTitle)
 
-            -- Preview
             local PreviewOuter = Instance.new("Frame")
             PreviewOuter.Parent = ToggleBtn
             PreviewOuter.Position = UDim2.new(1, -30, 0, 4)
@@ -1951,6 +1768,7 @@ function Library:CreateWindow(options)
             PreviewOuter.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
             PreviewOuter.BorderSizePixel = 1
             PreviewOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            AddCorner(PreviewOuter, 3)
 
             local Preview = Instance.new("Frame")
             Preview.Parent = PreviewOuter
@@ -1958,6 +1776,7 @@ function Library:CreateWindow(options)
             Preview.Position = UDim2.new(0, 1, 0, 1)
             Preview.BackgroundColor3 = defaultColor
             Preview.BorderSizePixel = 0
+            AddCorner(Preview, 2)
 
             local isOpen = false
             ToggleBtn.MouseButton1Click:Connect(function()
@@ -1974,7 +1793,6 @@ function Library:CreateWindow(options)
                 end
             end)
 
-            -- SV Map
             local SVOuter = Instance.new("Frame")
             SVOuter.Parent = CPInner
             SVOuter.Position = UDim2.new(0, 10, 0, 25)
@@ -1982,6 +1800,7 @@ function Library:CreateWindow(options)
             SVOuter.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
             SVOuter.BorderSizePixel = 1
             SVOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            AddCorner(SVOuter, 3)
 
             local SVMap = Instance.new("ImageLabel")
             SVMap.Parent = SVOuter
@@ -1989,6 +1808,7 @@ function Library:CreateWindow(options)
             SVMap.Position = UDim2.new(0, 1, 0, 1)
             SVMap.Image = "rbxassetid://4155801252"
             SVMap.BorderSizePixel = 0
+            AddCorner(SVMap, 3)
 
             local SVSelector = Instance.new("Frame")
             SVSelector.Parent = SVMap
@@ -1999,7 +1819,6 @@ function Library:CreateWindow(options)
             SVSelector.BorderSizePixel = 1
             SVSelector.BorderColor3 = Color3.fromRGB(0, 0, 0)
 
-            -- Hue Slider
             local HueOuter = Instance.new("Frame")
             HueOuter.Parent = CPInner
             HueOuter.Position = UDim2.new(1, -25, 0, 25)
@@ -2007,12 +1826,14 @@ function Library:CreateWindow(options)
             HueOuter.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
             HueOuter.BorderSizePixel = 1
             HueOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            AddCorner(HueOuter, 3)
 
             local HueMap = Instance.new("Frame")
             HueMap.Parent = HueOuter
             HueMap.Size = UDim2.new(1, -2, 1, -2)
             HueMap.Position = UDim2.new(0, 1, 0, 1)
             HueMap.BorderSizePixel = 0
+            AddCorner(HueMap, 3)
 
             local HueGradient = Instance.new("UIGradient")
             HueGradient.Color = ColorSequence.new({
@@ -2035,7 +1856,6 @@ function Library:CreateWindow(options)
             HueSelector.BorderSizePixel = 1
             HueSelector.BorderColor3 = Color3.fromRGB(0, 0, 0)
 
-            -- Alpha Slider
             local AlphaOuter = Instance.new("Frame")
             AlphaOuter.Parent = CPInner
             AlphaOuter.Position = UDim2.new(0, 10, 0, 155)
@@ -2044,6 +1864,7 @@ function Library:CreateWindow(options)
             AlphaOuter.BorderSizePixel = 1
             AlphaOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
             AlphaOuter.Visible = useAlpha
+            AddCorner(AlphaOuter, 3)
 
             local AlphaMap = Instance.new("Frame")
             AlphaMap.Parent = AlphaOuter
@@ -2051,6 +1872,7 @@ function Library:CreateWindow(options)
             AlphaMap.Position = UDim2.new(0, 1, 0, 1)
             AlphaMap.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             AlphaMap.BorderSizePixel = 0
+            AddCorner(AlphaMap, 3)
 
             local AlphaGradient = Instance.new("UIGradient")
             AlphaGradient.Color = ColorSequence.new({
@@ -2179,6 +2001,7 @@ function Library:CreateWindow(options)
             VOuter.Size = UDim2.new(1, -10, 0, height)
             VOuter.BorderSizePixel = 1
             VOuter.BorderColor3 = Color3.fromRGB(40, 40, 40)
+            AddCorner(VOuter, 4)
 
             local VTitle = Instance.new("TextLabel")
             VTitle.Parent = VOuter
@@ -2201,6 +2024,7 @@ function Library:CreateWindow(options)
             Viewport.LightColor = Color3.fromRGB(255, 255, 255)
             Viewport.LightDirection = Vector3.new(0, -1, 0)
             Viewport.Ambient = Color3.fromRGB(150, 150, 150)
+            AddCorner(Viewport, 4)
 
             local Camera = Instance.new("Camera")
             Viewport.CurrentCamera = Camera
@@ -2267,7 +2091,6 @@ function Library.ConfigManager:Load(name)
                     end
                 end
             end
-            -- Note: Keybind loading omitted for brevity, can be added later
         end
     end
 end
@@ -2289,6 +2112,7 @@ function Library:Unload()
         Library.GUI = nil
     end
 end
+
 do
     return Library
 end
