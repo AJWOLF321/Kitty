@@ -65,6 +65,7 @@ Library.Keybinds = {}
 Library.ActiveKeybinds = {}
 Library.Flags = {}
 Library.Options = {}
+Library.SearchableElements = {}
 Library.OnTabChange = Instance.new("BindableEvent")
 Library.Theme = {
     Accent = Color3.fromRGB(0, 150, 255),
@@ -214,8 +215,8 @@ function Library:CreateWindow(options)
 
     local OuterFrame = Instance.new("Frame")
     OuterFrame.Name = "OuterFrame"
-    OuterFrame.Size = UDim2.new(0, 600, 0, 500)
-    OuterFrame.Position = UDim2.new(0.5, -300, 0.5, -250)
+    OuterFrame.Size = UDim2.new(0, 620, 0, 520)
+    OuterFrame.Position = UDim2.new(0.5, -310, 0.5, -260)
     OuterFrame.BackgroundColor3 = Color3.fromRGB(6, 8, 12)
     OuterFrame.BorderSizePixel = 1
     OuterFrame.BorderColor3 = Color3.fromRGB(18, 26, 38)
@@ -260,20 +261,227 @@ function Library:CreateWindow(options)
     Topbar.Parent = MainBg
     Topbar.BackgroundTransparency = 1
     Topbar.Position = UDim2.new(0, 0, 0, 2)
-    Topbar.Size = UDim2.new(1, 0, 0, 22)
+    Topbar.Size = UDim2.new(1, 0, 0, 36)
     Topbar.BorderSizePixel = 0
     MakeDraggable(Topbar, OuterFrame)
 
     local TitleLabel = Instance.new("TextLabel")
     TitleLabel.Parent = Topbar
     TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Position = UDim2.new(0, 8, 0, 0)
-    TitleLabel.Size = UDim2.new(1, -16, 1, 0)
+    TitleLabel.Position = UDim2.new(0, 14, 0, 0)
+    TitleLabel.Size = UDim2.new(0.4, 0, 1, 0)
     TitleLabel.Text = Title
     TitleLabel.TextColor3 = Color3.fromRGB(240, 245, 255)
-    TitleLabel.TextSize = 12
+    TitleLabel.TextSize = 14
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     ApplyFont(TitleLabel)
+
+    local SearchBtn = Instance.new("TextButton")
+    SearchBtn.Name = "SearchBtn"
+    SearchBtn.Parent = Topbar
+    SearchBtn.BackgroundColor3 = Color3.fromRGB(16, 22, 32)
+    SearchBtn.BorderColor3 = Color3.fromRGB(28, 40, 60)
+    SearchBtn.BorderSizePixel = 1
+    SearchBtn.Position = UDim2.new(1, -38, 0.5, -13)
+    SearchBtn.Size = UDim2.new(0, 26, 0, 26)
+    SearchBtn.Text = "🔍"
+    SearchBtn.TextColor3 = Color3.fromRGB(0, 170, 255)
+    SearchBtn.TextSize = 13
+    SearchBtn.AutoButtonColor = false
+    AddCorner(SearchBtn, 4)
+
+    local SearchBarFrame = Instance.new("Frame")
+    SearchBarFrame.Name = "SearchBarFrame"
+    SearchBarFrame.Parent = Topbar
+    SearchBarFrame.BackgroundColor3 = Color3.fromRGB(12, 16, 24)
+    SearchBarFrame.BorderColor3 = Color3.fromRGB(28, 40, 60)
+    SearchBarFrame.BorderSizePixel = 1
+    SearchBarFrame.Position = UDim2.new(1, -265, 0.5, -13)
+    SearchBarFrame.Size = UDim2.new(0, 220, 0, 26)
+    SearchBarFrame.Visible = false
+    AddCorner(SearchBarFrame, 4)
+
+    local SearchInput = Instance.new("TextBox")
+    SearchInput.Name = "SearchInput"
+    SearchInput.Parent = SearchBarFrame
+    SearchInput.BackgroundTransparency = 1
+    SearchInput.Position = UDim2.new(0, 8, 0, 0)
+    SearchInput.Size = UDim2.new(1, -28, 1, 0)
+    SearchInput.PlaceholderText = "Search toggles..."
+    SearchInput.PlaceholderColor3 = Color3.fromRGB(90, 115, 150)
+    SearchInput.Text = ""
+    SearchInput.TextColor3 = Color3.fromRGB(240, 245, 255)
+    SearchInput.TextSize = 12
+    SearchInput.TextXAlignment = Enum.TextXAlignment.Left
+    SearchInput.ClearTextOnFocus = false
+    ApplyFont(SearchInput)
+
+    local SearchClear = Instance.new("TextButton")
+    SearchClear.Name = "SearchClear"
+    SearchClear.Parent = SearchBarFrame
+    SearchClear.BackgroundTransparency = 1
+    SearchClear.Position = UDim2.new(1, -20, 0.5, -7)
+    SearchClear.Size = UDim2.new(0, 14, 0, 14)
+    SearchClear.Text = "✕"
+    SearchClear.TextColor3 = Color3.fromRGB(120, 140, 170)
+    SearchClear.TextSize = 10
+
+    local SearchResultsFrame = Instance.new("Frame")
+    SearchResultsFrame.Name = "SearchResultsFrame"
+    SearchResultsFrame.Parent = MainBg
+    SearchResultsFrame.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
+    SearchResultsFrame.BorderColor3 = Color3.fromRGB(28, 40, 60)
+    SearchResultsFrame.BorderSizePixel = 1
+    SearchResultsFrame.Position = UDim2.new(1, -270, 0, 42)
+    SearchResultsFrame.Size = UDim2.new(0, 260, 0, 0)
+    SearchResultsFrame.ZIndex = 50
+    SearchResultsFrame.ClipsDescendants = true
+    SearchResultsFrame.Visible = false
+    AddCorner(SearchResultsFrame, 5)
+
+    local SearchScroll = Instance.new("ScrollingFrame")
+    SearchScroll.Name = "SearchScroll"
+    SearchScroll.Parent = SearchResultsFrame
+    SearchScroll.BackgroundTransparency = 1
+    SearchScroll.Size = UDim2.new(1, 0, 1, 0)
+    SearchScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    SearchScroll.ScrollBarThickness = 2
+    SearchScroll.ScrollBarImageColor3 = Color3.fromRGB(0, 150, 255)
+    SearchScroll.ZIndex = 51
+
+    local SearchList = Instance.new("UIListLayout")
+    SearchList.Parent = SearchScroll
+    SearchList.SortOrder = Enum.SortOrder.LayoutOrder
+    SearchList.Padding = UDim.new(0, 3)
+
+    local SearchPadding = Instance.new("UIPadding")
+    SearchPadding.Parent = SearchScroll
+    SearchPadding.PaddingTop = UDim.new(0, 4)
+    SearchPadding.PaddingBottom = UDim.new(0, 4)
+    SearchPadding.PaddingLeft = UDim.new(0, 4)
+    SearchPadding.PaddingRight = UDim.new(0, 4)
+
+    SearchList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        SearchScroll.CanvasSize = UDim2.new(0, 0, 0, SearchList.AbsoluteContentSize.Y + 8)
+    end)
+
+    local isSearchOpen = false
+    local function ToggleSearch(open)
+        if open == nil then isSearchOpen = not isSearchOpen else isSearchOpen = open end
+        SearchBarFrame.Visible = isSearchOpen
+        if isSearchOpen then
+            SearchInput:CaptureFocus()
+        else
+            SearchInput.Text = ""
+            SearchResultsFrame.Visible = false
+        end
+    end
+
+    SearchBtn.MouseButton1Click:Connect(function()
+        ToggleSearch()
+    end)
+
+    SearchClear.MouseButton1Click:Connect(function()
+        SearchInput.Text = ""
+        SearchResultsFrame.Visible = false
+    end)
+
+    local function RenderSearchResults(query)
+        for _, child in ipairs(SearchScroll:GetChildren()) do
+            if child:IsA("Frame") or child:IsA("TextButton") or child:IsA("TextLabel") then
+                child:Destroy()
+            end
+        end
+
+        if not query or query == "" then
+            SearchResultsFrame.Visible = false
+            return
+        end
+
+        local lowerQ = string.lower(query)
+        local matches = {}
+        for _, item in ipairs(Library.SearchableElements) do
+            if string.find(string.lower(item.Name), lowerQ, 1, true) or string.find(string.lower(item.TabName), lowerQ, 1, true) then
+                table.insert(matches, item)
+            end
+        end
+
+        if #matches == 0 then
+            local emptyLabel = Instance.new("TextLabel")
+            emptyLabel.Parent = SearchScroll
+            emptyLabel.BackgroundTransparency = 1
+            emptyLabel.Size = UDim2.new(1, 0, 0, 24)
+            emptyLabel.Text = "No matching toggles found"
+            emptyLabel.TextColor3 = Color3.fromRGB(120, 140, 170)
+            emptyLabel.TextSize = 12
+            emptyLabel.ZIndex = 52
+            ApplyFont(emptyLabel)
+            SearchResultsFrame.Visible = true
+            SearchResultsFrame.Size = UDim2.new(0, 260, 0, 34)
+            return
+        end
+
+        SearchResultsFrame.Visible = true
+        local frameHeight = math.min(220, (#matches * 32) + 10)
+        SearchResultsFrame.Size = UDim2.new(0, 260, 0, frameHeight)
+
+        for _, item in ipairs(matches) do
+            local row = Instance.new("Frame")
+            row.Parent = SearchScroll
+            row.BackgroundColor3 = Color3.fromRGB(14, 18, 26)
+            row.Size = UDim2.new(1, 0, 0, 28)
+            row.BorderSizePixel = 1
+            row.BorderColor3 = Color3.fromRGB(24, 34, 50)
+            row.ZIndex = 52
+            AddCorner(row, 4)
+
+            local rowBtn = Instance.new("TextButton")
+            rowBtn.Parent = row
+            rowBtn.BackgroundTransparency = 1
+            rowBtn.Position = UDim2.new(0, 6, 0, 0)
+            rowBtn.Size = UDim2.new(1, -34, 1, 0)
+            rowBtn.Text = item.Name .. "  [" .. item.TabName .. "]"
+            rowBtn.TextColor3 = Color3.fromRGB(240, 245, 255)
+            rowBtn.TextSize = 11
+            rowBtn.TextXAlignment = Enum.TextXAlignment.Left
+            rowBtn.TextTruncate = Enum.TextTruncate.AtEnd
+            rowBtn.ZIndex = 53
+            ApplyFont(rowBtn)
+
+            rowBtn.MouseEnter:Connect(function()
+                rowBtn.TextColor3 = Library.Theme.Accent
+            end)
+            rowBtn.MouseLeave:Connect(function()
+                rowBtn.TextColor3 = Color3.fromRGB(240, 245, 255)
+            end)
+            rowBtn.MouseButton1Click:Connect(function()
+                if item.SwitchToTab then item.SwitchToTab() end
+            end)
+
+            if item.Type == "Toggle" then
+                local chk = Instance.new("TextButton")
+                chk.Parent = row
+                chk.BackgroundColor3 = item.GetState() and Library.Theme.Accent or Color3.fromRGB(18, 24, 36)
+                chk.BorderSizePixel = 1
+                chk.BorderColor3 = Color3.fromRGB(28, 40, 60)
+                chk.Position = UDim2.new(1, -22, 0.5, -6)
+                chk.Size = UDim2.new(0, 14, 0, 14)
+                chk.Text = ""
+                chk.ZIndex = 54
+                AddCorner(chk, 3)
+
+                chk.MouseButton1Click:Connect(function()
+                    local cur = item.GetState()
+                    item.SetState(not cur)
+                    chk.BackgroundColor3 = (not cur) and Library.Theme.Accent or Color3.fromRGB(18, 24, 36)
+                end)
+            end
+        end
+    end
+
+    SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
+        RenderSearchResults(SearchInput.Text)
+    end)
 
     Library:RegisterTheme(MainBg, "Background", "BackgroundColor3")
     Library:RegisterTheme(TitleLabel, "Text", "TextColor3")
@@ -282,8 +490,8 @@ function Library:CreateWindow(options)
     TabBar.Name = "TabBar"
     TabBar.Parent = MainBg
     TabBar.BackgroundColor3 = Color3.fromRGB(8, 10, 15)
-    TabBar.Position = UDim2.new(0, 6, 0, 26)
-    TabBar.Size = UDim2.new(0.24, -6, 1, -32)
+    TabBar.Position = UDim2.new(0, 6, 0, 42)
+    TabBar.Size = UDim2.new(0.24, -6, 1, -48)
     TabBar.BorderSizePixel = 1
     TabBar.BorderColor3 = Color3.fromRGB(18, 26, 38)
     TabBar.ScrollBarThickness = 2
@@ -316,8 +524,8 @@ function Library:CreateWindow(options)
     Container.Parent = MainBg
     Container.BackgroundColor3 = Color3.fromRGB(10, 13, 20)
     Container.BackgroundTransparency = 1
-    Container.Position = UDim2.new(0.24, 4, 0, 26)
-    Container.Size = UDim2.new(0.76, -10, 1, -32)
+    Container.Position = UDim2.new(0.24, 4, 0, 42)
+    Container.Size = UDim2.new(0.76, -10, 1, -48)
     Container.BorderSizePixel = 0
 
     local ResizeHandle = Instance.new("TextButton")
@@ -748,27 +956,35 @@ function Library:CreateWindow(options)
         TabBtn.Parent = TabBar
         TabBtn.BackgroundColor3 = Color3.fromRGB(14, 18, 26)
         TabBtn.BackgroundTransparency = 0
-        TabBtn.Size = UDim2.new(1, 0, 0, 30)
-        TabBtn.Text = "  " .. name
-        TabBtn.TextColor3 = Color3.fromRGB(140, 160, 190)
-        TabBtn.TextSize = 12
-        TabBtn.TextXAlignment = Enum.TextXAlignment.Left
-        TabBtn.TextTruncate = Enum.TextTruncate.AtEnd
+        TabBtn.Size = UDim2.new(1, 0, 0, 36)
+        TabBtn.Text = ""
         TabBtn.BorderSizePixel = 1
         TabBtn.BorderColor3 = Color3.fromRGB(24, 34, 50)
         TabBtn.AutoButtonColor = false
-        ApplyFont(TabBtn)
         AddCorner(TabBtn, 4)
         
         local TabAccent = Instance.new("Frame")
         TabAccent.Name = "TabAccent"
         TabAccent.Parent = TabBtn
-        TabAccent.Size = UDim2.new(0, 3, 0.7, 0)
-        TabAccent.Position = UDim2.new(0, 2, 0.15, 0)
+        TabAccent.Size = UDim2.new(0, 3, 0.6, 0)
+        TabAccent.Position = UDim2.new(0, 4, 0.2, 0)
         TabAccent.BorderSizePixel = 0
         TabAccent.Visible = false
         AddCorner(TabAccent, 2)
         Library:RegisterTheme(TabAccent, "Accent", "BackgroundColor3")
+
+        local TabLabel = Instance.new("TextLabel")
+        TabLabel.Name = "TabLabel"
+        TabLabel.Parent = TabBtn
+        TabLabel.BackgroundTransparency = 1
+        TabLabel.Position = UDim2.new(0, 16, 0, 0)
+        TabLabel.Size = UDim2.new(1, -22, 1, 0)
+        TabLabel.Text = name
+        TabLabel.TextColor3 = Color3.fromRGB(140, 160, 190)
+        TabLabel.TextSize = 13
+        TabLabel.TextXAlignment = Enum.TextXAlignment.Left
+        TabLabel.TextTruncate = Enum.TextTruncate.AtEnd
+        ApplyFont(TabLabel)
 
         local TabPage = Instance.new("Frame")
         TabPage.Name = name.."_Page"
@@ -855,13 +1071,13 @@ function Library:CreateWindow(options)
         SubTabBarList.SortOrder = Enum.SortOrder.LayoutOrder
         SubTabBarList.Padding = UDim.new(0, 2)
 
-        table.insert(WindowObj.Tabs, {Btn = TabBtn, Page = TabPage})
+        table.insert(WindowObj.Tabs, {Btn = TabBtn, Page = TabPage, Label = TabLabel})
         
         Library.OnTabChange.Event:Connect(function()
             if WindowObj.CurrentTab ~= name then
                 TabPage.Visible = false
                 TabBtn.BackgroundColor3 = Color3.fromRGB(14, 18, 26)
-                TabBtn.TextColor3 = Color3.fromRGB(140, 160, 190)
+                TabLabel.TextColor3 = Color3.fromRGB(140, 160, 190)
                 TabAccent.Visible = false
             end
         end)
@@ -871,7 +1087,7 @@ function Library:CreateWindow(options)
             Library.OnTabChange:Fire()
             TabPage.Visible = true
             TabBtn.BackgroundColor3 = Color3.fromRGB(20, 30, 46)
-            TabBtn.TextColor3 = Library.Theme.Accent
+            TabLabel.TextColor3 = Library.Theme.Accent
             TabAccent.Visible = true
         end)
 
@@ -879,13 +1095,13 @@ function Library:CreateWindow(options)
             WindowObj.CurrentTab = name
             TabPage.Visible = true
             TabBtn.BackgroundColor3 = Color3.fromRGB(20, 30, 46)
-            TabBtn.TextColor3 = Library.Theme.Accent
+            TabLabel.TextColor3 = Library.Theme.Accent
             TabAccent.Visible = true
         end
         
         Library:RegisterTheme(function(color)
             if WindowObj.CurrentTab == name then
-                TabBtn.TextColor3 = color
+                TabLabel.TextColor3 = color
             end
         end, "Accent", "Custom")
 
@@ -1288,6 +1504,22 @@ function Library:CreateWindow(options)
 
             if state then callback(state) end
             TrackElement(ToggleContainer)
+
+            table.insert(Library.SearchableElements, {
+                Name = tName,
+                Type = "Toggle",
+                TabName = name,
+                GetState = function() return state end,
+                SetState = function(val) SetState(val) end,
+                SwitchToTab = function()
+                    WindowObj.CurrentTab = name
+                    Library.OnTabChange:Fire()
+                    TabPage.Visible = true
+                    TabBtn.BackgroundColor3 = Color3.fromRGB(20, 30, 46)
+                    TabLabel.TextColor3 = Library.Theme.Accent
+                    TabAccent.Visible = true
+                end
+            })
 
             local toggleObj = {
                 Set = function(self, val)
