@@ -1206,6 +1206,13 @@ function Library:CreateWindow(options)
         end
 
         function Tab:CreateSubTab(name)
+            for _, existing in ipairs(subTabs) do
+                if existing.Name == name then
+                    currentSubTab = name
+                    return existing.Obj
+                end
+            end
+
             if not SubTabBar.Visible then
                 SubTabBar.Visible = true
                 SubTabBar.Size = UDim2.new(1, 0, 0, 26)
@@ -1237,14 +1244,14 @@ function Library:CreateWindow(options)
             SubTabAccent.Visible = false
             Library:RegisterTheme(SubTabAccent, "Accent", "BackgroundColor3")
 
-            table.insert(subTabs, {Name = name, Btn = subTabBtn, Elements = {}})
-
             local function switchSubTab(targetName)
                 currentSubTab = targetName
                 for _, st in ipairs(subTabs) do
                     local isTarget = (st.Name == targetName)
                     st.Btn.TextColor3 = isTarget and Library.Theme.Accent or Color3.fromRGB(130, 150, 180)
                     st.Btn.BackgroundColor3 = isTarget and Color3.fromRGB(20, 30, 46) or Color3.fromRGB(14, 18, 26)
+                    local acc = st.Btn:FindFirstChildWhichIsA("Frame")
+                    if acc then acc.Visible = isTarget end
                     for _, elem in ipairs(st.Elements) do
                         elem.Visible = isTarget
                     end
@@ -1255,22 +1262,51 @@ function Library:CreateWindow(options)
                 switchSubTab(name)
             end)
 
-            if #subTabs == 1 then
-                switchSubTab(name)
-            end
+            currentSubTab = name
 
             local SubTab = {}
             function SubTab:CreateSection(sName, side)
+                currentSubTab = name
                 return Tab:CreateSection(sName, side)
             end
-            function SubTab:CreateButton(opts) return Tab:CreateButton(opts) end
-            function SubTab:CreateInputButton(opts) return Tab:CreateInputButton(opts) end
-            function SubTab:CreateTextBox(opts) return Tab:CreateTextBox(opts) end
-            function SubTab:CreateToggle(opts) return Tab:CreateToggle(opts) end
-            function SubTab:CreateSlider(opts) return Tab:CreateSlider(opts) end
-            function SubTab:CreateDropdown(opts) return Tab:CreateDropdown(opts) end
-            function SubTab:CreateColorPicker(opts) return Tab:CreateColorPicker(opts) end
-            function SubTab:CreateViewport(opts) return Tab:CreateViewport(opts) end
+            function SubTab:CreateButton(opts)
+                currentSubTab = name
+                return Tab:CreateButton(opts)
+            end
+            function SubTab:CreateInputButton(opts)
+                currentSubTab = name
+                return Tab:CreateInputButton(opts)
+            end
+            function SubTab:CreateTextBox(opts)
+                currentSubTab = name
+                return Tab:CreateTextBox(opts)
+            end
+            function SubTab:CreateToggle(opts)
+                currentSubTab = name
+                return Tab:CreateToggle(opts)
+            end
+            function SubTab:CreateSlider(opts)
+                currentSubTab = name
+                return Tab:CreateSlider(opts)
+            end
+            function SubTab:CreateDropdown(opts)
+                currentSubTab = name
+                return Tab:CreateDropdown(opts)
+            end
+            function SubTab:CreateColorPicker(opts)
+                currentSubTab = name
+                return Tab:CreateColorPicker(opts)
+            end
+            function SubTab:CreateViewport(opts)
+                currentSubTab = name
+                return Tab:CreateViewport(opts)
+            end
+
+            table.insert(subTabs, {Name = name, Btn = subTabBtn, Elements = {}, Obj = SubTab})
+
+            if #subTabs == 1 then
+                switchSubTab(name)
+            end
 
             return SubTab
         end
