@@ -2355,16 +2355,35 @@ function Library.ConfigManager:Save(name)
     local path = FolderLocation..'\\Configs\\'..name..'.json'
     local HttpService = game:GetService('HttpService')
     
+    local serializedFlags = {}
+    for flag, val in pairs(Library.Flags) do
+        if typeof(val) == "Color3" then
+            serializedFlags[flag] = {__type = "Color3", R = val.R, G = val.G, B = val.B, A = 1}
+        elseif type(val) == "table" and val.R and val.G and val.B then
+            serializedFlags[flag] = {__type = "Color3", R = val.R, G = val.G, B = val.B, A = val.A or 1}
+        elseif typeof(val) == "EnumItem" then
+            serializedFlags[flag] = {__type = "EnumItem", Name = val.Name}
+        else
+            serializedFlags[flag] = val
+        end
+    end
+
     local saveData = {
-        Flags = Library.Flags,
+        Flags = serializedFlags,
         Keybinds = {}
     }
     
     for id, bind in pairs(Library.Keybinds) do
-        saveData.Keybinds[id] = { Key = bind.Key.Name, Mode = bind.Mode }
+        if bind and bind.Key then
+            local kName = (typeof(bind.Key) == "EnumItem" and bind.Key.Name) or (type(bind.Key) == "table" and bind.Key.Name) or tostring(bind.Key)
+            saveData.Keybinds[id] = { Key = kName, Mode = bind.Mode }
+        end
     end
     
-    writefile(path, HttpService:JSONEncode(saveData))
+    local ok, encoded = pcall(function() return HttpService:JSONEncode(saveData) end)
+    if ok and encoded then
+        writefile(path, encoded)
+    end
 end
 
 function Library.ConfigManager:Load(name)
@@ -2377,11 +2396,19 @@ function Library.ConfigManager:Load(name)
         if success and decoded then
             if decoded.Flags then
                 for flag, val in pairs(decoded.Flags) do
-                    if Library.Options[flag] then
-                        if type(val) == 'table' and val.R then
-                            Library.Options[flag]:Set(Color3.new(val.R, val.G, val.B), val.A)
-                        else
-                            Library.Options[flag]:Set(val)
+                    local optionObj = Library.Options[flag]
+                    local isColor = type(val) == "table" and (val.__type == "Color3" or (val.R and val.G and val.B))
+                    if isColor then
+                        local col = Color3.new(val.R, val.G, val.B)
+                        local alpha = val.A or 1
+                        Library.Flags[flag] = (val.A ~= nil and val.A < 1) and {R = col.R, G = col.G, B = col.B, A = alpha} or col
+                        if optionObj and optionObj.Set then
+                            pcall(function() optionObj:Set(col, alpha) end)
+                        end
+                    else
+                        Library.Flags[flag] = val
+                        if optionObj and optionObj.Set then
+                            pcall(function() optionObj:Set(val) end)
                         end
                     end
                 end
