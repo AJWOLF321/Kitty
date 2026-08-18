@@ -914,54 +914,6 @@ function Library:CreateWindow(options)
         end)
     end
 
-    UserInputService.InputBegan:Connect(function(input)
-        local isMouse = input.UserInputType == Enum.UserInputType.MouseButton1 
-                     or input.UserInputType == Enum.UserInputType.MouseButton2 
-                     or input.UserInputType == Enum.UserInputType.MouseButton3
-        local isKey = input.UserInputType == Enum.UserInputType.Keyboard
-
-        for id, bind in pairs(Library.Keybinds) do
-            local match = false
-            if isKey and (input.KeyCode == bind.Key or input.KeyCode.Name == bind.Key or (type(bind.Key) == "table" and input.KeyCode.Name == bind.Key.Name)) then
-                match = true
-            elseif isMouse and (input.UserInputType == bind.Key or input.UserInputType.Name == bind.Key or (type(bind.Key) == "table" and input.UserInputType.Name == bind.Key.Name)) then
-                match = true
-            end
-
-            if match then
-                if bind.Mode == "Toggle" then
-                    bind.Data.Callback("toggle")
-                elseif bind.Mode == "Hold" then
-                    Library.ActiveKeybinds[id] = true
-                    bind.Data.Callback("hold_start")
-                elseif bind.Mode == "Always" then
-                    bind.Data.Callback("always")
-                end
-            end
-        end
-    end)
-
-    UserInputService.InputEnded:Connect(function(input)
-        local isMouse = input.UserInputType == Enum.UserInputType.MouseButton1 
-                     or input.UserInputType == Enum.UserInputType.MouseButton2 
-                     or input.UserInputType == Enum.UserInputType.MouseButton3
-        local isKey = input.UserInputType == Enum.UserInputType.Keyboard
-
-        for id, bind in pairs(Library.Keybinds) do
-            local match = false
-            if isKey and (input.KeyCode == bind.Key or input.KeyCode.Name == bind.Key or (type(bind.Key) == "table" and input.KeyCode.Name == bind.Key.Name)) then
-                match = true
-            elseif isMouse and (input.UserInputType == bind.Key or input.UserInputType.Name == bind.Key or (type(bind.Key) == "table" and input.UserInputType.Name == bind.Key.Name)) then
-                match = true
-            end
-
-            if match and bind.Mode == "Hold" then
-                Library.ActiveKeybinds[id] = nil
-                bind.Data.Callback("hold_end")
-            end
-        end
-    end)
-
     local lastActiveCount = -1
     RunService.RenderStepped:Connect(function()
         for id, bind in pairs(Library.Keybinds) do
@@ -1601,25 +1553,6 @@ function Library:CreateWindow(options)
             
             Btn.MouseButton1Click:Connect(function() SetState(not state) end)
 
-            Btn.MouseButton2Click:Connect(function()
-                ShowContextMenu(UserInputService:GetMouseLocation(), {
-                    Id = id,
-                    Name = tName,
-                    Callback = function(action)
-                        if action == "toggle" then
-                            SetState(not state)
-                        elseif action == "hold_start" then
-                            SetState(true)
-                        elseif action == "hold_end" then
-                            SetState(false)
-                        elseif action == "always" then
-                            if not state then SetState(true) end
-                        end
-                    end,
-                    GetState = function() return state end
-                })
-            end)
-
             Library:RegisterTheme(function(color)
                 if state then
                     TweenService:Create(CheckBox, TweenInfo.new(0.15, Enum.EasingStyle.Sine), {BackgroundColor3 = color}):Play()
@@ -1648,6 +1581,9 @@ function Library:CreateWindow(options)
             local toggleObj = {
                 Set = function(self, val)
                     SetState(val)
+                end,
+                Get = function(self)
+                    return state
                 end,
                 Show = function(self) ToggleContainer.Visible = true end,
                 Hide = function(self) ToggleContainer.Visible = false end
