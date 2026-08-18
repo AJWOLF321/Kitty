@@ -291,15 +291,40 @@ function Library:CreateWindow(options)
     SearchBtn.AutoButtonColor = false
     AddCorner(SearchBtn, 5)
 
-    local SearchIcon = Instance.new("ImageLabel")
-    SearchIcon.Name = "SearchIcon"
-    SearchIcon.Parent = SearchBtn
-    SearchIcon.BackgroundTransparency = 1
-    SearchIcon.Position = UDim2.new(0.5, -8, 0.5, -8)
-    SearchIcon.Size = UDim2.new(0, 16, 0, 16)
-    SearchIcon.Image = "rbxassetid://6031154871"
-    SearchIcon.ImageColor3 = Color3.fromRGB(140, 180, 230)
-    SearchIcon.ZIndex = 26
+    local SearchIconFrame = Instance.new("Frame")
+    SearchIconFrame.Name = "SearchIconFrame"
+    SearchIconFrame.Parent = SearchBtn
+    SearchIconFrame.BackgroundTransparency = 1
+    SearchIconFrame.Size = UDim2.new(0, 18, 0, 18)
+    SearchIconFrame.Position = UDim2.new(0.5, -9, 0.5, -9)
+    SearchIconFrame.ZIndex = 26
+
+    local GlassCircle = Instance.new("Frame")
+    GlassCircle.Name = "GlassCircle"
+    GlassCircle.Parent = SearchIconFrame
+    GlassCircle.BackgroundTransparency = 1
+    GlassCircle.Position = UDim2.new(0, 1, 0, 1)
+    GlassCircle.Size = UDim2.new(0, 10, 0, 10)
+    GlassCircle.BorderSizePixel = 0
+    GlassCircle.ZIndex = 27
+    AddCorner(GlassCircle, 10)
+
+    local GlassStroke = Instance.new("UIStroke")
+    GlassStroke.Parent = GlassCircle
+    GlassStroke.Thickness = 2
+    GlassStroke.Color = Color3.fromRGB(140, 180, 230)
+    GlassStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+    local GlassHandle = Instance.new("Frame")
+    GlassHandle.Name = "GlassHandle"
+    GlassHandle.Parent = SearchIconFrame
+    GlassHandle.BackgroundColor3 = Color3.fromRGB(140, 180, 230)
+    GlassHandle.BorderSizePixel = 0
+    GlassHandle.Position = UDim2.new(0, 9, 0, 9)
+    GlassHandle.Size = UDim2.new(0, 6, 0, 2)
+    GlassHandle.Rotation = 45
+    GlassHandle.ZIndex = 27
+    AddCorner(GlassHandle, 1)
 
     local SearchBarFrame = Instance.new("Frame")
     SearchBarFrame.Name = "SearchBarFrame"
@@ -337,16 +362,38 @@ function Library:CreateWindow(options)
     SearchClear.Size = UDim2.new(0, 18, 0, 18)
     SearchClear.Text = ""
     SearchClear.ZIndex = 32
+    SearchClear.Visible = false
 
-    local ClearIcon = Instance.new("ImageLabel")
-    ClearIcon.Name = "ClearIcon"
-    ClearIcon.Parent = SearchClear
-    ClearIcon.BackgroundTransparency = 1
-    ClearIcon.Position = UDim2.new(0.5, -6, 0.5, -6)
-    ClearIcon.Size = UDim2.new(0, 12, 0, 12)
-    ClearIcon.Image = "rbxassetid://6031094678"
-    ClearIcon.ImageColor3 = Color3.fromRGB(120, 145, 180)
-    ClearIcon.ZIndex = 33
+    local XLine1 = Instance.new("Frame")
+    XLine1.Name = "XLine1"
+    XLine1.Parent = SearchClear
+    XLine1.BackgroundColor3 = Color3.fromRGB(130, 155, 185)
+    XLine1.BorderSizePixel = 0
+    XLine1.Size = UDim2.new(0, 10, 0, 2)
+    XLine1.Position = UDim2.new(0.5, -5, 0.5, -1)
+    XLine1.Rotation = 45
+    XLine1.ZIndex = 33
+    AddCorner(XLine1, 1)
+
+    local XLine2 = Instance.new("Frame")
+    XLine2.Name = "XLine2"
+    XLine2.Parent = SearchClear
+    XLine2.BackgroundColor3 = Color3.fromRGB(130, 155, 185)
+    XLine2.BorderSizePixel = 0
+    XLine2.Size = UDim2.new(0, 10, 0, 2)
+    XLine2.Position = UDim2.new(0.5, -5, 0.5, -1)
+    XLine2.Rotation = -45
+    XLine2.ZIndex = 33
+    AddCorner(XLine2, 1)
+
+    SearchClear.MouseEnter:Connect(function()
+        XLine1.BackgroundColor3 = Library.Theme.Accent
+        XLine2.BackgroundColor3 = Library.Theme.Accent
+    end)
+    SearchClear.MouseLeave:Connect(function()
+        XLine1.BackgroundColor3 = Color3.fromRGB(130, 155, 185)
+        XLine2.BackgroundColor3 = Color3.fromRGB(130, 155, 185)
+    end)
 
     local SearchResultsFrame = Instance.new("Frame")
     SearchResultsFrame.Name = "SearchResultsFrame"
@@ -394,24 +441,29 @@ function Library:CreateWindow(options)
         if isSearchOpen then
             SearchBtn.BackgroundColor3 = Color3.fromRGB(22, 34, 52)
             SearchBtn.BorderColor3 = Library.Theme.Accent
-            SearchIcon.ImageColor3 = Library.Theme.Accent
+            GlassStroke.Color = Library.Theme.Accent
+            GlassHandle.BackgroundColor3 = Library.Theme.Accent
             SearchInput:CaptureFocus()
         else
             SearchBtn.BackgroundColor3 = Color3.fromRGB(16, 24, 38)
             SearchBtn.BorderColor3 = Color3.fromRGB(28, 40, 60)
-            SearchIcon.ImageColor3 = Color3.fromRGB(140, 180, 230)
+            GlassStroke.Color = Color3.fromRGB(140, 180, 230)
+            GlassHandle.BackgroundColor3 = Color3.fromRGB(140, 180, 230)
             SearchInput.Text = ""
+            SearchClear.Visible = false
             SearchResultsFrame.Visible = false
         end
     end
 
     SearchBtn.MouseEnter:Connect(function()
-        TweenService:Create(SearchIcon, TweenInfo.new(0.15), {ImageColor3 = Library.Theme.Accent}):Play()
+        TweenService:Create(GlassStroke, TweenInfo.new(0.15), {Color = Library.Theme.Accent}):Play()
+        TweenService:Create(GlassHandle, TweenInfo.new(0.15), {BackgroundColor3 = Library.Theme.Accent}):Play()
         TweenService:Create(SearchBtn, TweenInfo.new(0.15), {BorderColor3 = Library.Theme.Accent, BackgroundColor3 = Color3.fromRGB(22, 34, 52)}):Play()
     end)
     SearchBtn.MouseLeave:Connect(function()
         if not isSearchOpen then
-            TweenService:Create(SearchIcon, TweenInfo.new(0.15), {ImageColor3 = Color3.fromRGB(140, 180, 230)}):Play()
+            TweenService:Create(GlassStroke, TweenInfo.new(0.15), {Color = Color3.fromRGB(140, 180, 230)}):Play()
+            TweenService:Create(GlassHandle, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(140, 180, 230)}):Play()
             TweenService:Create(SearchBtn, TweenInfo.new(0.15), {BorderColor3 = Color3.fromRGB(28, 40, 60), BackgroundColor3 = Color3.fromRGB(16, 24, 38)}):Play()
         end
     end)
@@ -423,6 +475,7 @@ function Library:CreateWindow(options)
     SearchClear.MouseButton1Click:Connect(function()
         SearchInput.Text = ""
         SearchResultsFrame.Visible = false
+        SearchClear.Visible = false
     end)
 
     local function RenderSearchResults(query)
@@ -519,6 +572,7 @@ function Library:CreateWindow(options)
     end
 
     SearchInput:GetPropertyChangedSignal("Text"):Connect(function()
+        SearchClear.Visible = (SearchInput.Text ~= "")
         RenderSearchResults(SearchInput.Text)
     end)
 
