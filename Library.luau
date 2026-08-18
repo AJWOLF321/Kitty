@@ -917,14 +917,21 @@ function Library:CreateWindow(options)
     local lastActiveCount = -1
     RunService.RenderStepped:Connect(function()
         for id, bind in pairs(Library.Keybinds) do
-            if bind.Mode == "Always" then
+            if bind and bind.Mode == "Always" and bind.Data and bind.Data.Callback then
                 bind.Data.Callback("always")
             end
         end
 
         local activeBinds = {}
+        local seenBinds = {}
         for id, bind in pairs(Library.Keybinds) do
-            table.insert(activeBinds, {Id = id, Bind = bind})
+            if bind and bind.Key and bind.Data then
+                local identifier = bind.Data.Flag or bind.Data.Name or id
+                if not seenBinds[identifier] then
+                    seenBinds[identifier] = true
+                    table.insert(activeBinds, {Id = id, Identifier = identifier, Bind = bind})
+                end
+            end
         end
 
         if #activeBinds ~= lastActiveCount then
@@ -935,11 +942,12 @@ function Library:CreateWindow(options)
 
             for _, item in ipairs(activeBinds) do
                 local bind = item.Bind
+                local kName = (typeof(bind.Key) == "EnumItem" and bind.Key.Name) or (type(bind.Key) == "table" and bind.Key.Name) or tostring(bind.KeyName or bind.Key)
                 local lbl = Instance.new("TextLabel")
                 lbl.Parent = KeybindContainer
                 lbl.BackgroundTransparency = 1
                 lbl.Size = UDim2.new(1, 0, 0, 18)
-                lbl.Text = "  " .. tostring(bind.Data.Name) .. " [" .. tostring(bind.Key.Name) .. "]"
+                lbl.Text = "  " .. tostring(bind.Data.Name) .. " [" .. tostring(kName) .. "]"
                 lbl.TextColor3 = Color3.fromRGB(240, 245, 255)
                 lbl.TextSize = 12
                 lbl.TextXAlignment = Enum.TextXAlignment.Left
@@ -959,14 +967,15 @@ function Library:CreateWindow(options)
                     if bind.Mode == "Always" then
                         isActive = true
                     elseif bind.Mode == "Hold" then
-                        isActive = Library.ActiveKeybinds[item.Id]
+                        isActive = Library.ActiveKeybinds[item.Id] or (item.Identifier and Library.ActiveKeybinds[item.Identifier])
                     elseif bind.Mode == "Toggle" then
                         if bind.Data.GetState then
                             isActive = bind.Data.GetState()
                         end
                     end
                     
-                    v.Text = "  " .. tostring(bind.Data.Name) .. " [" .. tostring(bind.Key.Name) .. "]"
+                    local kName = (typeof(bind.Key) == "EnumItem" and bind.Key.Name) or (type(bind.Key) == "table" and bind.Key.Name) or tostring(bind.KeyName or bind.Key)
+                    v.Text = "  " .. tostring(bind.Data.Name) .. " [" .. tostring(kName) .. "]"
                     v.TextColor3 = isActive and Library.Theme.Accent or Library.Theme.Text
                     idx = idx + 1
                 end
