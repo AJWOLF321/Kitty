@@ -282,16 +282,24 @@ function Library:CreateWindow(options)
     SearchBtn.Name = "SearchBtn"
     SearchBtn.Parent = Topbar
     SearchBtn.BackgroundColor3 = Color3.fromRGB(16, 24, 38)
-    SearchBtn.BorderColor3 = Color3.fromRGB(0, 150, 255)
+    SearchBtn.BorderColor3 = Color3.fromRGB(28, 40, 60)
     SearchBtn.BorderSizePixel = 1
     SearchBtn.Position = UDim2.new(1, -44, 0.5, -15)
     SearchBtn.Size = UDim2.new(0, 30, 0, 30)
-    SearchBtn.Text = "🔍"
-    SearchBtn.TextColor3 = Color3.fromRGB(0, 170, 255)
-    SearchBtn.TextSize = 14
+    SearchBtn.Text = ""
     SearchBtn.ZIndex = 25
     SearchBtn.AutoButtonColor = false
     AddCorner(SearchBtn, 5)
+
+    local SearchIcon = Instance.new("ImageLabel")
+    SearchIcon.Name = "SearchIcon"
+    SearchIcon.Parent = SearchBtn
+    SearchIcon.BackgroundTransparency = 1
+    SearchIcon.Position = UDim2.new(0.5, -8, 0.5, -8)
+    SearchIcon.Size = UDim2.new(0, 16, 0, 16)
+    SearchIcon.Image = "rbxassetid://6031154871"
+    SearchIcon.ImageColor3 = Color3.fromRGB(140, 180, 230)
+    SearchIcon.ZIndex = 26
 
     local SearchBarFrame = Instance.new("Frame")
     SearchBarFrame.Name = "SearchBarFrame"
@@ -325,12 +333,20 @@ function Library:CreateWindow(options)
     SearchClear.Name = "SearchClear"
     SearchClear.Parent = SearchBarFrame
     SearchClear.BackgroundTransparency = 1
-    SearchClear.Position = UDim2.new(1, -26, 0.5, -10)
-    SearchClear.Size = UDim2.new(0, 20, 0, 20)
-    SearchClear.Text = "✕"
-    SearchClear.TextColor3 = Color3.fromRGB(120, 145, 180)
-    SearchClear.TextSize = 12
+    SearchClear.Position = UDim2.new(1, -26, 0.5, -9)
+    SearchClear.Size = UDim2.new(0, 18, 0, 18)
+    SearchClear.Text = ""
     SearchClear.ZIndex = 32
+
+    local ClearIcon = Instance.new("ImageLabel")
+    ClearIcon.Name = "ClearIcon"
+    ClearIcon.Parent = SearchClear
+    ClearIcon.BackgroundTransparency = 1
+    ClearIcon.Position = UDim2.new(0.5, -6, 0.5, -6)
+    ClearIcon.Size = UDim2.new(0, 12, 0, 12)
+    ClearIcon.Image = "rbxassetid://6031094678"
+    ClearIcon.ImageColor3 = Color3.fromRGB(120, 145, 180)
+    ClearIcon.ZIndex = 33
 
     local SearchResultsFrame = Instance.new("Frame")
     SearchResultsFrame.Name = "SearchResultsFrame"
@@ -376,14 +392,29 @@ function Library:CreateWindow(options)
         if open == nil then isSearchOpen = not isSearchOpen else isSearchOpen = open end
         SearchBarFrame.Visible = isSearchOpen
         if isSearchOpen then
-            SearchBtn.BackgroundColor3 = Color3.fromRGB(24, 38, 60)
+            SearchBtn.BackgroundColor3 = Color3.fromRGB(22, 34, 52)
+            SearchBtn.BorderColor3 = Library.Theme.Accent
+            SearchIcon.ImageColor3 = Library.Theme.Accent
             SearchInput:CaptureFocus()
         else
             SearchBtn.BackgroundColor3 = Color3.fromRGB(16, 24, 38)
+            SearchBtn.BorderColor3 = Color3.fromRGB(28, 40, 60)
+            SearchIcon.ImageColor3 = Color3.fromRGB(140, 180, 230)
             SearchInput.Text = ""
             SearchResultsFrame.Visible = false
         end
     end
+
+    SearchBtn.MouseEnter:Connect(function()
+        TweenService:Create(SearchIcon, TweenInfo.new(0.15), {ImageColor3 = Library.Theme.Accent}):Play()
+        TweenService:Create(SearchBtn, TweenInfo.new(0.15), {BorderColor3 = Library.Theme.Accent, BackgroundColor3 = Color3.fromRGB(22, 34, 52)}):Play()
+    end)
+    SearchBtn.MouseLeave:Connect(function()
+        if not isSearchOpen then
+            TweenService:Create(SearchIcon, TweenInfo.new(0.15), {ImageColor3 = Color3.fromRGB(140, 180, 230)}):Play()
+            TweenService:Create(SearchBtn, TweenInfo.new(0.15), {BorderColor3 = Color3.fromRGB(28, 40, 60), BackgroundColor3 = Color3.fromRGB(16, 24, 38)}):Play()
+        end
+    end)
 
     SearchBtn.MouseButton1Click:Connect(function()
         ToggleSearch()
@@ -545,8 +576,8 @@ function Library:CreateWindow(options)
     ResizeHandle.Text = "◢"
     ResizeHandle.TextColor3 = Color3.fromRGB(100, 130, 170)
     ResizeHandle.TextSize = 18
+    ResizeHandle.Font = Enum.Font.SourceSansBold
     ResizeHandle.ZIndex = 100
-    ApplyFont(ResizeHandle)
 
     ResizeHandle.MouseEnter:Connect(function()
         TweenService:Create(ResizeHandle, TweenInfo.new(0.2), {TextColor3 = Library.Theme.Accent}):Play()
