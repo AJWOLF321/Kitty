@@ -281,37 +281,35 @@ function Library:CreateWindow(options)
     local SearchBtn = Instance.new("TextButton")
     SearchBtn.Name = "SearchBtn"
     SearchBtn.Parent = Topbar
-    SearchBtn.BackgroundColor3 = Color3.fromRGB(16, 24, 38)
-    SearchBtn.BorderColor3 = Color3.fromRGB(28, 40, 60)
-    SearchBtn.BorderSizePixel = 1
-    SearchBtn.Position = UDim2.new(1, -44, 0.5, -15)
-    SearchBtn.Size = UDim2.new(0, 30, 0, 30)
+    SearchBtn.BackgroundTransparency = 1
+    SearchBtn.BorderSizePixel = 0
+    SearchBtn.Position = UDim2.new(1, -40, 0.5, -13)
+    SearchBtn.Size = UDim2.new(0, 26, 0, 26)
     SearchBtn.Text = ""
     SearchBtn.ZIndex = 25
     SearchBtn.AutoButtonColor = false
-    AddCorner(SearchBtn, 5)
 
     local SearchIconFrame = Instance.new("Frame")
     SearchIconFrame.Name = "SearchIconFrame"
     SearchIconFrame.Parent = SearchBtn
     SearchIconFrame.BackgroundTransparency = 1
-    SearchIconFrame.Size = UDim2.new(0, 18, 0, 18)
-    SearchIconFrame.Position = UDim2.new(0.5, -9, 0.5, -9)
+    SearchIconFrame.Size = UDim2.new(0, 20, 0, 20)
+    SearchIconFrame.Position = UDim2.new(0.5, -10, 0.5, -10)
     SearchIconFrame.ZIndex = 26
 
     local GlassCircle = Instance.new("Frame")
     GlassCircle.Name = "GlassCircle"
     GlassCircle.Parent = SearchIconFrame
     GlassCircle.BackgroundTransparency = 1
-    GlassCircle.Position = UDim2.new(0, 1, 0, 1)
-    GlassCircle.Size = UDim2.new(0, 10, 0, 10)
+    GlassCircle.Position = UDim2.new(0, 2, 0, 2)
+    GlassCircle.Size = UDim2.new(0, 8, 0, 8)
     GlassCircle.BorderSizePixel = 0
     GlassCircle.ZIndex = 27
-    AddCorner(GlassCircle, 10)
+    AddCorner(GlassCircle, 8)
 
     local GlassStroke = Instance.new("UIStroke")
     GlassStroke.Parent = GlassCircle
-    GlassStroke.Thickness = 2
+    GlassStroke.Thickness = 1.8
     GlassStroke.Color = Color3.fromRGB(140, 180, 230)
     GlassStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 
@@ -320,8 +318,9 @@ function Library:CreateWindow(options)
     GlassHandle.Parent = SearchIconFrame
     GlassHandle.BackgroundColor3 = Color3.fromRGB(140, 180, 230)
     GlassHandle.BorderSizePixel = 0
-    GlassHandle.Position = UDim2.new(0, 9, 0, 9)
-    GlassHandle.Size = UDim2.new(0, 6, 0, 2)
+    GlassHandle.AnchorPoint = Vector2.new(0, 0.5)
+    GlassHandle.Position = UDim2.new(0, 8.5, 0, 8.5)
+    GlassHandle.Size = UDim2.new(0, 8, 0, 1.8)
     GlassHandle.Rotation = 45
     GlassHandle.ZIndex = 27
     AddCorner(GlassHandle, 1)
@@ -439,14 +438,10 @@ function Library:CreateWindow(options)
         if open == nil then isSearchOpen = not isSearchOpen else isSearchOpen = open end
         SearchBarFrame.Visible = isSearchOpen
         if isSearchOpen then
-            SearchBtn.BackgroundColor3 = Color3.fromRGB(22, 34, 52)
-            SearchBtn.BorderColor3 = Library.Theme.Accent
             GlassStroke.Color = Library.Theme.Accent
             GlassHandle.BackgroundColor3 = Library.Theme.Accent
             SearchInput:CaptureFocus()
         else
-            SearchBtn.BackgroundColor3 = Color3.fromRGB(16, 24, 38)
-            SearchBtn.BorderColor3 = Color3.fromRGB(28, 40, 60)
             GlassStroke.Color = Color3.fromRGB(140, 180, 230)
             GlassHandle.BackgroundColor3 = Color3.fromRGB(140, 180, 230)
             SearchInput.Text = ""
@@ -458,13 +453,11 @@ function Library:CreateWindow(options)
     SearchBtn.MouseEnter:Connect(function()
         TweenService:Create(GlassStroke, TweenInfo.new(0.15), {Color = Library.Theme.Accent}):Play()
         TweenService:Create(GlassHandle, TweenInfo.new(0.15), {BackgroundColor3 = Library.Theme.Accent}):Play()
-        TweenService:Create(SearchBtn, TweenInfo.new(0.15), {BorderColor3 = Library.Theme.Accent, BackgroundColor3 = Color3.fromRGB(22, 34, 52)}):Play()
     end)
     SearchBtn.MouseLeave:Connect(function()
         if not isSearchOpen then
             TweenService:Create(GlassStroke, TweenInfo.new(0.15), {Color = Color3.fromRGB(140, 180, 230)}):Play()
             TweenService:Create(GlassHandle, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(140, 180, 230)}):Play()
-            TweenService:Create(SearchBtn, TweenInfo.new(0.15), {BorderColor3 = Color3.fromRGB(28, 40, 60), BackgroundColor3 = Color3.fromRGB(16, 24, 38)}):Play()
         end
     end)
 
